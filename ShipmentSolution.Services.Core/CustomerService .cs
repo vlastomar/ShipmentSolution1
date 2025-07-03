@@ -4,10 +4,6 @@ using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.CustomerViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ShipmentSolution.Services.Core
 {
@@ -20,18 +16,6 @@ namespace ShipmentSolution.Services.Core
             this.context = context;
         }
 
-        /*public async Task<IEnumerable<CustomerViewModel>> GetAllAsync()
-        {
-            return await context.Customers
-                .Select(c => new CustomerViewModel
-                {
-                    CustomerId = c.CustomerId,
-                    FirstName = c.FirstName,
-                    LastName = c.LastName,
-                    Email = c.Email
-                })
-                .ToListAsync();
-        }  */
         public async Task<IEnumerable<CustomerViewModel>> GetAllAsync()
         {
             return await context.Customers
@@ -48,26 +32,38 @@ namespace ShipmentSolution.Services.Core
 
         public async Task CreateAsync(CustomerCreateViewModel model)
         {
-            var customer = new Customer
+            try
             {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Email = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                City = model.City,
-                State = model.State,
-                ZipCode = model.ZipCode,
-                PreferredShippingMethod = model.PreferredShippingMethod,
-                ShippingCostThreshold = model.ShippingCostThreshold
-            };
+                var customer = new Customer
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    City = model.City,
+                    State = model.State,
+                    ZipCode = model.ZipCode,
+                    PreferredShippingMethod = model.PreferredShippingMethod,
+                    ShippingCostThreshold = model.ShippingCostThreshold
+                };
 
-            context.Customers.Add(customer);
-            await context.SaveChangesAsync();
+                context.Customers.Add(customer);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while creating the customer.", ex);
+            }
         }
 
         public async Task<CustomerEditViewModel> GetForEditAsync(int id)
         {
             var customer = await context.Customers.FindAsync(id);
+            if (customer == null || customer.IsDeleted)
+            {
+                throw new KeyNotFoundException("Customer not found.");
+            }
+
             return new CustomerEditViewModel
             {
                 CustomerId = customer.CustomerId,
@@ -85,32 +81,60 @@ namespace ShipmentSolution.Services.Core
 
         public async Task EditAsync(CustomerEditViewModel model)
         {
-            var customer = await context.Customers.FindAsync(model.CustomerId);
-            customer.FirstName = model.FirstName;
-            customer.LastName = model.LastName;
-            customer.Email = model.Email;
-            customer.PhoneNumber = model.PhoneNumber;
-            customer.City = model.City;
-            customer.State = model.State;
-            customer.ZipCode = model.ZipCode;
-            customer.PreferredShippingMethod = model.PreferredShippingMethod;
-            customer.ShippingCostThreshold = model.ShippingCostThreshold;
+            try
+            {
+                var customer = await context.Customers.FindAsync(model.CustomerId);
+                if (customer == null || customer.IsDeleted)
+                {
+                    throw new KeyNotFoundException("Customer not found.");
+                }
 
-            await context.SaveChangesAsync();
+                customer.FirstName = model.FirstName;
+                customer.LastName = model.LastName;
+                customer.Email = model.Email;
+                customer.PhoneNumber = model.PhoneNumber;
+                customer.City = model.City;
+                customer.State = model.State;
+                customer.ZipCode = model.ZipCode;
+                customer.PreferredShippingMethod = model.PreferredShippingMethod;
+                customer.ShippingCostThreshold = model.ShippingCostThreshold;
+
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while editing the customer.", ex);
+            }
         }
 
         public async Task DeleteAsync(int id)
         {
-            var customer = await context.Customers.FindAsync(id);
-            customer.IsDeleted = true;
-            await context.SaveChangesAsync();
-        } 
-       
+            try
+            {
+                var customer = await context.Customers.FindAsync(id);
+                if (customer == null || customer.IsDeleted)
+                {
+                    throw new KeyNotFoundException("Customer not found.");
+                }
+
+                customer.IsDeleted = true;
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while deleting the customer.", ex);
+            }
+        }
+
         public async Task<CustomerViewModel> GetByIdAsync(int id)
         {
-            var entity = await context.Customers.FirstOrDefaultAsync(c => c.CustomerId == id);
+            var entity = await context.Customers
+                .FirstOrDefaultAsync(c => c.CustomerId == id && !c.IsDeleted);
+
             if (entity == null)
-                return null!;
+            {
+                throw new KeyNotFoundException("Customer not found.");
+            }
 
             return new CustomerViewModel
             {
@@ -123,13 +147,23 @@ namespace ShipmentSolution.Services.Core
 
         public async Task SoftDeleteAsync(int id)
         {
-            var customer = await context.Customers.FindAsync(id);
-            if (customer != null)
+            try
             {
+                var customer = await context.Customers.FindAsync(id);
+                if (customer == null || customer.IsDeleted)
+                {
+                    throw new KeyNotFoundException("Customer not found.");
+                }
+
                 customer.IsDeleted = true;
                 await context.SaveChangesAsync();
             }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while soft deleting the customer.", ex);
+            }
         }
+
         public async Task<PaginatedList<CustomerViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm)
         {
             var query = context.Customers
@@ -165,10 +199,5 @@ namespace ShipmentSolution.Services.Core
                 TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
             };
         }
-
-
-
-
-
     }
 }

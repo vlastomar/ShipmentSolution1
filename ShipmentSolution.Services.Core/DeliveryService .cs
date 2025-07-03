@@ -5,11 +5,6 @@ using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.DeliveryViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShipmentSolution.Services.Core
 {
@@ -22,56 +17,54 @@ namespace ShipmentSolution.Services.Core
             this.context = context;
         }
 
-        /*public async Task<IEnumerable<DeliveryViewModel>> GetAllAsync()
-        {
-            return await context.Deliveries
-                .Include(d => d.Shipment)
-                .Include(d => d.MailCarrier)
-                .Include(d => d.Route)
-                .Select(d => new DeliveryViewModel
-                {
-                    DeliveryId = d.DeliveryId,
-                    ShipmentInfo = $"#{d.ShipmentId} - {d.Shipment.ShippingMethod}",
-                    MailCarrierName = $"{d.MailCarrier.FirstName} {d.MailCarrier.LastName}",
-                    Route = $"{d.Route.StartLocation} → {d.Route.EndLocation}",
-                    DateDelivered = d.DateDelivered
-                })
-                .ToListAsync();
-        }*/
-
-        
         public async Task<IEnumerable<DeliveryViewModel>> GetAllAsync()
         {
-            return await context.Deliveries
-                .Where(d => !d.IsDeleted)
-                .Select(d => new DeliveryViewModel
-                {
-                    DeliveryId = d.DeliveryId,
-                    ShipmentInfo = $"Shipment #{d.ShipmentId} - {d.Shipment.ShippingMethod}",
-                    MailCarrierName = d.MailCarrier.FirstName + " " + d.MailCarrier.LastName,
-                    Route = d.Route.StartLocation + " → " + d.Route.EndLocation,
-                    DateDelivered = d.DateDelivered
-                })
-                .ToListAsync();
+            try
+            {
+                return await context.Deliveries
+                    .Where(d => !d.IsDeleted)
+                    .Select(d => new DeliveryViewModel
+                    {
+                        DeliveryId = d.DeliveryId,
+                        ShipmentInfo = $"Shipment #{d.ShipmentId} - {d.Shipment.ShippingMethod}",
+                        MailCarrierName = d.MailCarrier.FirstName + " " + d.MailCarrier.LastName,
+                        Route = d.Route.StartLocation + " → " + d.Route.EndLocation,
+                        DateDelivered = d.DateDelivered
+                    })
+                    .ToListAsync();
+            }
+            catch
+            {
+                return new List<DeliveryViewModel>();
+            }
         }
 
         public async Task CreateAsync(DeliveryCreateViewModel model)
         {
-            var delivery = new Delivery
+            try
             {
-                ShipmentId = model.ShipmentId,
-                MailCarrierId = model.MailCarrierId,
-                RouteId = model.RouteId,
-                DateDelivered = model.DateDelivered
-            };
+                var delivery = new Delivery
+                {
+                    ShipmentId = model.ShipmentId,
+                    MailCarrierId = model.MailCarrierId,
+                    RouteId = model.RouteId,
+                    DateDelivered = model.DateDelivered
+                };
 
-            context.Deliveries.Add(delivery);
-            await context.SaveChangesAsync();
+                context.Deliveries.Add(delivery);
+                await context.SaveChangesAsync();
+            }
+            catch
+            {
+                // log exception
+                throw;
+            }
         }
 
         public async Task<DeliveryEditViewModel> GetForEditAsync(int id)
         {
             var d = await context.Deliveries.FindAsync(id);
+            if (d == null) throw new Exception("Delivery not found.");
 
             var shipments = await context.Shipments
                 .Where(s => !s.IsDeleted)
@@ -112,14 +105,23 @@ namespace ShipmentSolution.Services.Core
 
         public async Task EditAsync(DeliveryEditViewModel model)
         {
-            var d = await context.Deliveries.FindAsync(model.DeliveryId);
+            try
+            {
+                var d = await context.Deliveries.FindAsync(model.DeliveryId);
+                if (d == null) throw new Exception("Delivery not found.");
 
-            d.ShipmentId = model.ShipmentId;
-            d.MailCarrierId = model.MailCarrierId;
-            d.RouteId = model.RouteId;
-            d.DateDelivered = model.DateDelivered;
+                d.ShipmentId = model.ShipmentId;
+                d.MailCarrierId = model.MailCarrierId;
+                d.RouteId = model.RouteId;
+                d.DateDelivered = model.DateDelivered;
 
-            await context.SaveChangesAsync();
+                await context.SaveChangesAsync();
+            }
+            catch
+            {
+                // log exception
+                throw;
+            }
         }
 
         public async Task<DeliveryViewModel> GetByIdAsync(int id)
@@ -129,6 +131,8 @@ namespace ShipmentSolution.Services.Core
                 .Include(x => x.MailCarrier)
                 .Include(x => x.Route)
                 .FirstOrDefaultAsync(x => x.DeliveryId == id);
+
+            if (d == null) throw new Exception("Delivery not found.");
 
             return new DeliveryViewModel
             {
@@ -142,11 +146,19 @@ namespace ShipmentSolution.Services.Core
 
         public async Task SoftDeleteAsync(int id)
         {
-            var d = await context.Deliveries.FindAsync(id);
-            if (d != null)
+            try
             {
-                d.IsDeleted = true;
-                await context.SaveChangesAsync();
+                var d = await context.Deliveries.FindAsync(id);
+                if (d != null)
+                {
+                    d.IsDeleted = true;
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch
+            {
+                // log exception
+                throw;
             }
         }
 
@@ -158,8 +170,7 @@ namespace ShipmentSolution.Services.Core
                 {
                     Value = s.ShipmentId.ToString(),
                     Text = $"#{s.ShipmentId} - {s.ShippingMethod}"
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
             var mailCarriers = await context.MailCarriers
                 .Where(m => !m.IsDeleted)
@@ -167,8 +178,7 @@ namespace ShipmentSolution.Services.Core
                 {
                     Value = m.MailCarrierId.ToString(),
                     Text = m.FirstName + " " + m.LastName
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
             var routes = await context.Routes
                 .Where(r => !r.IsDeleted)
@@ -176,8 +186,7 @@ namespace ShipmentSolution.Services.Core
                 {
                     Value = r.RouteId.ToString(),
                     Text = r.StartLocation + " → " + r.EndLocation
-                })
-                .ToListAsync();
+                }).ToListAsync();
 
             return new DeliveryCreateViewModel
             {
@@ -187,54 +196,66 @@ namespace ShipmentSolution.Services.Core
                 DateDelivered = DateTime.Today
             };
         }
+
         public async Task<PaginatedList<DeliveryViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? mailCarrierFilter)
         {
-            var query = context.Deliveries
-                .Where(d => !d.IsDeleted)
-                .Include(d => d.Shipment)
-                    .ThenInclude(s => s.Customer)
-                .Include(d => d.Route)
-                .Include(d => d.MailCarrier)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            try
             {
-                searchTerm = searchTerm.ToLower();
-                query = query.Where(d =>
-                    d.Shipment.Customer.FirstName.ToLower().Contains(searchTerm) ||
-                    d.Shipment.Customer.LastName.ToLower().Contains(searchTerm) ||
-                    d.MailCarrier.FirstName.ToLower().Contains(searchTerm) ||
-                    d.MailCarrier.LastName.ToLower().Contains(searchTerm));
-            }
+                var query = context.Deliveries
+                    .Where(d => !d.IsDeleted)
+                    .Include(d => d.Shipment).ThenInclude(s => s.Customer)
+                    .Include(d => d.Route)
+                    .Include(d => d.MailCarrier)
+                    .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(mailCarrierFilter))
-            {
-                query = query.Where(d =>
-                    (d.MailCarrier.FirstName + " " + d.MailCarrier.LastName) == mailCarrierFilter);
-            }
-
-            var totalItems = await query.CountAsync();
-
-            var items = await query
-                .OrderByDescending(d => d.DateDelivered)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .Select(d => new DeliveryViewModel
+                if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
-                    DeliveryId = d.DeliveryId,
-                    ShipmentInfo = $"Shipment #{d.ShipmentId} for {d.Shipment.Customer.FirstName} {d.Shipment.Customer.LastName}",
-                    MailCarrierName = $"{d.MailCarrier.FirstName} {d.MailCarrier.LastName}",
-                    Route = $"{d.Route.StartLocation} - {d.Route.EndLocation}",
-                    DateDelivered = d.DateDelivered
-                })
-                .ToListAsync();
+                    searchTerm = searchTerm.ToLower();
+                    query = query.Where(d =>
+                        d.Shipment.Customer.FirstName.ToLower().Contains(searchTerm) ||
+                        d.Shipment.Customer.LastName.ToLower().Contains(searchTerm) ||
+                        d.MailCarrier.FirstName.ToLower().Contains(searchTerm) ||
+                        d.MailCarrier.LastName.ToLower().Contains(searchTerm));
+                }
 
-            return new PaginatedList<DeliveryViewModel>
+                if (!string.IsNullOrWhiteSpace(mailCarrierFilter))
+                {
+                    query = query.Where(d =>
+                        (d.MailCarrier.FirstName + " " + d.MailCarrier.LastName) == mailCarrierFilter);
+                }
+
+                var totalItems = await query.CountAsync();
+
+                var items = await query
+                    .OrderByDescending(d => d.DateDelivered)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(d => new DeliveryViewModel
+                    {
+                        DeliveryId = d.DeliveryId,
+                        ShipmentInfo = $"Shipment #{d.ShipmentId} for {d.Shipment.Customer.FirstName} {d.Shipment.Customer.LastName}",
+                        MailCarrierName = $"{d.MailCarrier.FirstName} {d.MailCarrier.LastName}",
+                        Route = $"{d.Route.StartLocation} - {d.Route.EndLocation}",
+                        DateDelivered = d.DateDelivered
+                    })
+                    .ToListAsync();
+
+                return new PaginatedList<DeliveryViewModel>
+                {
+                    Items = items,
+                    PageIndex = pageIndex,
+                    TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
+                };
+            }
+            catch
             {
-                Items = items,
-                PageIndex = pageIndex,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
-            };
+                return new PaginatedList<DeliveryViewModel>
+                {
+                    Items = new List<DeliveryViewModel>(),
+                    PageIndex = pageIndex,
+                    TotalPages = 1
+                };
+            }
         }
 
         public async Task<List<string>> GetCarrierNamesAsync()
@@ -245,10 +266,5 @@ namespace ShipmentSolution.Services.Core
                 .Distinct()
                 .ToListAsync();
         }
-
-
-
-
     }
 }
-

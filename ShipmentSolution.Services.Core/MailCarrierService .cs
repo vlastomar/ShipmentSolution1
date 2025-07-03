@@ -3,11 +3,6 @@ using ShipmentSolution.Data;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.MailCarrierViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShipmentSolution.Services.Core
 {
@@ -20,38 +15,35 @@ namespace ShipmentSolution.Services.Core
             this.context = context;
         }
 
-        /*public async Task<IEnumerable<MailCarrierViewModel>> GetAllAsync()
-        {
-            return await context.MailCarriers
-                .Select(c => new MailCarrierViewModel
-                {
-                    MailCarrierId = c.MailCarrierId,
-                    FullName = c.FirstName + " " + c.LastName,
-                    Email = c.Email,
-                    PhoneNumber = c.PhoneNumber,
-                    Status = c.Status,
-                    CurrentLocation = c.CurrentLocation
-                })
-                .ToListAsync();
-        }*/
         public async Task<IEnumerable<MailCarrierViewModel>> GetAllAsync()
         {
-            return await context.MailCarriers
-                .Where(mc => !mc.IsDeleted)
-                .Select(mc => new MailCarrierViewModel
-                {
-                    MailCarrierId = mc.MailCarrierId,
-                    FullName = mc.FirstName + " " + mc.LastName,
-                    Email = mc.Email,
-                    PhoneNumber = mc.PhoneNumber,
-                    Status = mc.Status,
-                    CurrentLocation = mc.CurrentLocation
-                }).ToListAsync();
+            try
+            {
+                return await context.MailCarriers
+                    .Where(mc => !mc.IsDeleted)
+                    .Select(mc => new MailCarrierViewModel
+                    {
+                        MailCarrierId = mc.MailCarrierId,
+                        FullName = mc.FirstName + " " + mc.LastName,
+                        Email = mc.Email,
+                        PhoneNumber = mc.PhoneNumber,
+                        Status = mc.Status,
+                        CurrentLocation = mc.CurrentLocation
+                    }).ToListAsync();
+            }
+            catch
+            {
+                return Enumerable.Empty<MailCarrierViewModel>();
+            }
         }
 
         public async Task<MailCarrierEditViewModel> GetForEditAsync(int id)
         {
             var mc = await context.MailCarriers.FindAsync(id);
+
+            if (mc == null)
+                throw new Exception("Mail carrier not found.");
+
             return new MailCarrierEditViewModel
             {
                 MailCarrierId = mc.MailCarrierId,
@@ -66,6 +58,10 @@ namespace ShipmentSolution.Services.Core
         public async Task<MailCarrierDeleteViewModel> GetByIdAsync(int id)
         {
             var mc = await context.MailCarriers.FindAsync(id);
+
+            if (mc == null)
+                throw new Exception("Mail carrier not found.");
+
             return new MailCarrierDeleteViewModel
             {
                 MailCarrierId = mc.MailCarrierId,
@@ -79,95 +75,121 @@ namespace ShipmentSolution.Services.Core
 
         public async Task CreateAsync(MailCarrierCreateViewModel model)
         {
-            var names = model.FullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-
-            var mc = new MailCarrier
+            try
             {
-                FirstName = names.Length > 0 ? names[0] : string.Empty,
-                LastName = names.Length > 1 ? names[1] : string.Empty,
-                Email = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                Status = model.Status,
-                CurrentLocation = model.CurrentLocation
-            };
+                var names = model.FullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
 
-            context.MailCarriers.Add(mc);
-            await context.SaveChangesAsync();
+                var mc = new Data.Models.MailCarrier
+                {
+                    FirstName = names.Length > 0 ? names[0] : string.Empty,
+                    LastName = names.Length > 1 ? names[1] : string.Empty,
+                    Email = model.Email,
+                    PhoneNumber = model.PhoneNumber,
+                    Status = model.Status,
+                    CurrentLocation = model.CurrentLocation
+                };
+
+                context.MailCarriers.Add(mc);
+                await context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to create MailCarrier.");
+            }
         }
-
 
         public async Task EditAsync(MailCarrierEditViewModel model)
         {
-            var mc = await context.MailCarriers.FindAsync(model.MailCarrierId);
-
-            if (mc != null)
+            try
             {
-                // Split FullName into FirstName and LastName
-                var names = model.FullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-                mc.FirstName = names.Length > 0 ? names[0] : string.Empty;
-                mc.LastName = names.Length > 1 ? names[1] : string.Empty;
+                var mc = await context.MailCarriers.FindAsync(model.MailCarrierId);
 
-                mc.Email = model.Email;
-                mc.PhoneNumber = model.PhoneNumber;
-                mc.Status = model.Status;
-                mc.CurrentLocation = model.CurrentLocation;
+                if (mc != null)
+                {
+                    var names = model.FullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+                    mc.FirstName = names.Length > 0 ? names[0] : string.Empty;
+                    mc.LastName = names.Length > 1 ? names[1] : string.Empty;
 
-                await context.SaveChangesAsync();
+                    mc.Email = model.Email;
+                    mc.PhoneNumber = model.PhoneNumber;
+                    mc.Status = model.Status;
+                    mc.CurrentLocation = model.CurrentLocation;
+
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to update MailCarrier.");
             }
         }
+
         public async Task SoftDeleteAsync(int id)
         {
-            var mc = await context.MailCarriers.FindAsync(id);
-            if (mc != null)
+            try
             {
-                mc.IsDeleted = true;
-                await context.SaveChangesAsync();
+                var mc = await context.MailCarriers.FindAsync(id);
+                if (mc != null)
+                {
+                    mc.IsDeleted = true;
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to delete MailCarrier.");
             }
         }
+
         public async Task<PaginatedList<MailCarrierViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? statusFilter)
         {
-            var query = context.MailCarriers
-                .Where(mc => !mc.IsDeleted);
-
-            if (!string.IsNullOrEmpty(searchTerm))
+            try
             {
-                searchTerm = searchTerm.ToLower();
-                query = query.Where(mc =>
-                    mc.FirstName.ToLower().Contains(searchTerm) ||
-                    mc.LastName.ToLower().Contains(searchTerm) ||
-                    mc.Email.ToLower().Contains(searchTerm));
-            }
+                var query = context.MailCarriers
+                    .Where(mc => !mc.IsDeleted);
 
-            if (!string.IsNullOrEmpty(statusFilter))
-            {
-                query = query.Where(mc => mc.Status == statusFilter);
-            }
-
-            var totalItems = await query.CountAsync();
-
-            var carriers = await query
-                .OrderBy(mc => mc.FirstName)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .Select(mc => new MailCarrierViewModel
+                if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    MailCarrierId = mc.MailCarrierId,
-                    FullName = mc.FirstName + " " + mc.LastName,
-                    Email = mc.Email,
-                    PhoneNumber = mc.PhoneNumber,
-                    Status = mc.Status,
-                    CurrentLocation = mc.CurrentLocation
-                })
-                .ToListAsync();
+                    searchTerm = searchTerm.ToLower();
+                    query = query.Where(mc =>
+                        mc.FirstName.ToLower().Contains(searchTerm) ||
+                        mc.LastName.ToLower().Contains(searchTerm) ||
+                        mc.Email.ToLower().Contains(searchTerm));
+                }
 
-            return new PaginatedList<MailCarrierViewModel>
+                if (!string.IsNullOrEmpty(statusFilter))
+                {
+                    query = query.Where(mc => mc.Status == statusFilter);
+                }
+
+                var totalItems = await query.CountAsync();
+
+                var carriers = await query
+                    .OrderBy(mc => mc.FirstName)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(mc => new MailCarrierViewModel
+                    {
+                        MailCarrierId = mc.MailCarrierId,
+                        FullName = mc.FirstName + " " + mc.LastName,
+                        Email = mc.Email,
+                        PhoneNumber = mc.PhoneNumber,
+                        Status = mc.Status,
+                        CurrentLocation = mc.CurrentLocation
+                    })
+                    .ToListAsync();
+
+                return new PaginatedList<MailCarrierViewModel>
+                {
+                    Items = carriers,
+                    PageIndex = pageIndex,
+                    TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
+                };
+            }
+            catch (Exception)
             {
-                Items = carriers,
-                PageIndex = pageIndex,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
-            };
+                throw new Exception("Failed to retrieve mail carriers.");
+            }
         }
-
-
     }
 }
