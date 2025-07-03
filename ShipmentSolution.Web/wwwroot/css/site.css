@@ -1,0 +1,66 @@
+﻿html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+/* 🎨 Navbar link colors */
+.navbar-nav .nav-link.nav-home {
+    color: #007bff; /* Bootstrap primary */
+}
+
+.navbar-nav .nav-link.nav-shipments {
+    color: #0d6efd; /* View Shipments (blue) */
+}
+
+.navbar-nav .nav-link.nav-customers {
+    color: #6c757d; /* View Customers (gray) */
+}
+
+.navbar-nav .nav-link.nav-mailcarriers {
+    color: #198754; /* View Mail Carriers (green) */
+}
+
+.navbar-nav .nav-link.nav-routes {
+    color: #0dcaf0; /* View Routes (cyan) */
+}
+
+.navbar-nav .nav-link.nav-deliveries {
+    color: #ffc107; /* View Deliveries (yellow/orange) */
+}
+
+/* 🔄 Hover effect for all nav links */
+.navbar-nav .nav-link:hover {
+    text-decoration: underline;
+}
+
+/* ✅ Optional: active link bolder */
+.navbar-nav .nav-link.active {
+    font-weight: bold;
+}
+
+/* 🔷 Light blue navbar background */
+.navbar {
+    background-color: #e6f7ff !important; /* very light blue */
+}

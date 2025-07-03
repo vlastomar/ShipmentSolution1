@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShipmentSolution.Data.Models\ShipmentSolution.Data.Models.csproj" />
+    <ProjectReference Include="..\ShipmentSolution.Data\ShipmentSolution.Data.csproj" />
+    <ProjectReference Include="..\ShipmentSolution.GCommon\ShipmentSolution.GCommon.csproj" />
+    <ProjectReference Include="..\ShipmentSolution.Web.ViewModels\ShipmentSolution.Web.ViewModels.csproj" />
+  </ItemGroup>
+
+</Project>

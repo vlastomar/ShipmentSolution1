@@ -1,0 +1,88 @@
+﻿@model ShipmentSolution.Web.ViewModels.Common.PaginatedList<ShipmentSolution.Web.ViewModels.CustomerViewModels.CustomerViewModel>
+
+@{
+    ViewData["Title"] = "All Customers";
+    Layout = "_Layout";
+}
+
+<!-- 🌄 Background Styling -->
+<style>
+    body {
+        background-image: url('/images/shipment5.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .content-wrapper {
+        background-color: rgba(255, 255, 255, 0.2); 
+        padding: 2rem;
+        margin-top: 1rem;
+        border-radius: 12px;
+    }
+</style>
+
+<div class="container content-wrapper">
+    <h2>All Customers</h2>
+
+    <!-- 🔍 Search + 🎯 Buttons -->
+    <form method="get" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="searchTerm" class="form-control" placeholder="Search by name or email"
+                   value="@ViewBag.CurrentSearch" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="Index" class="btn btn-secondary w-100">Reset</a>
+        </div>
+        <div class="col-md-4 text-end">
+            @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+            {
+                <a asp-action="Create" class="btn btn-success">➕ Create Customer</a>
+            }
+        </div>
+    </form>
+
+    <!-- 📋 Customer Table -->
+    <table class="table table-bordered table-striped bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                {
+                    <th>Actions</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model.Items)
+            {
+                <tr>
+                    <td>@customer.CustomerId</td>
+                    <td>@customer.FirstName</td>
+                    <td>@customer.LastName</td>
+                    <td>@customer.Email</td>
+                    @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                    {
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@customer.CustomerId" class="btn btn-warning btn-sm me-1">Edit</a>
+
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <a asp-action="Delete" asp-route-id="@customer.CustomerId" class="btn btn-danger btn-sm">Delete</a>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- 📄 Pagination Controls -->
+    <!-- (Keep this section unchanged) -->
+</div>

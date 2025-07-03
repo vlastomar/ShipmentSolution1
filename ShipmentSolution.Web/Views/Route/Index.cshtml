@@ -1,0 +1,149 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@model ShipmentSolution.Web.ViewModels.Common.PaginatedList<ShipmentSolution.Web.ViewModels.RouteViewModels.RouteViewModel>
+
+@{
+    ViewData["Title"] = "All Routes";
+    Layout = "_Layout";
+    bool isAdmin = User.IsInRole("Administrator");
+    bool isRegistered = User.IsInRole("RegisteredUser");
+}
+
+<style>
+    body {
+        background-image: url('/images/shipment8.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .content-wrapper {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="content-wrapper container">
+    <h2>All Routes</h2>
+
+    <form method="get" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Start or End..." />
+        </div>
+        <div class="col-md-3">
+            <select name="priorityFilter" class="form-select">
+                <option value="">All Priorities</option>
+                @foreach (var priority in (List<string>)ViewBag.PriorityOptions)
+                {
+                    <option value="@priority" selected="@(priority == (string?)ViewBag.CurrentPriority)">
+                        @priority
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="Index" class="btn btn-secondary">Reset</a>
+        </div>
+    </form>
+
+    @if (isAdmin || isRegistered)
+    {
+        <a asp-action="Create" class="btn btn-success mb-3">Create New Route</a>
+    }
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Start</th>
+                <th>End</th>
+                <th>Stops</th>
+                <th>Distance</th>
+                <th>Priority</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var route in Model.Items)
+        {
+            <tr>
+                <td>@route.StartLocation</td>
+                <td>@route.EndLocation</td>
+                <td>@route.Stops</td>
+                <td>@route.Distance</td>
+                <td>@route.Priority</td>
+                <td>
+                    @if (isAdmin || isRegistered)
+                    {
+                        <a asp-action="Edit" asp-route-id="@route.RouteId" class="btn btn-warning btn-sm me-1">Edit</a>
+                    }
+                    @if (isAdmin)
+                    {
+                        <a asp-action="Delete" asp-route-id="@route.RouteId" class="btn btn-danger btn-sm">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(Model.PageIndex - 1)"
+                       asp-route-searchTerm="@ViewBag.CurrentSearch"
+                       asp-route-priorityFilter="@ViewBag.CurrentPriority">Previous</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                if (i == Model.PageIndex)
+                {
+                    <li class="page-item active"><span class="page-link">@i</span></li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch"
+                           asp-route-priorityFilter="@ViewBag.CurrentPriority">@i</a>
+                    </li>
+                }
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(Model.PageIndex + 1)"
+                       asp-route-searchTerm="@ViewBag.CurrentSearch"
+                       asp-route-priorityFilter="@ViewBag.CurrentPriority">Next</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            }
+        </ul>
+    </nav>
+</div>

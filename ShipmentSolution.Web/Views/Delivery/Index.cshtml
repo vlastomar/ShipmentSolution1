@@ -1,0 +1,137 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@model ShipmentSolution.Web.ViewModels.Common.PaginatedList<ShipmentSolution.Web.ViewModels.DeliveryViewModels.DeliveryViewModel>
+
+@{
+    ViewData["Title"] = "All Deliveries";
+    Layout = "_Layout";
+    bool isAdmin = User.IsInRole("Administrator");
+    bool isRegistered = User.IsInRole("RegisteredUser");
+    bool isLoggedIn = SignInManager.IsSignedIn(User);
+}
+
+<!-- background styling -->
+<style>
+    body {
+        background-image: url('/images/shipment6.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .content-wrapper {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        margin-top: 1rem;
+        border-radius: 12px;
+    }
+</style>
+
+<div class="container content-wrapper">
+    <h2>All Deliveries</h2>
+
+    <!-- 🔍 Search and Filter -->
+    <form asp-action="Index" method="get" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Customer or Carrier name..." />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Filter by Carrier</label>
+                <select name="mailCarrierFilter" class="form-select">
+                    <option value="">-- All --</option>
+                    @foreach (var carrier in (List<string>)ViewBag.MailCarrierOptions)
+                    {
+                        <option value="@carrier" selected="@(carrier == (string?)ViewBag.CurrentCarrier)">@carrier</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a asp-action="Index" class="btn btn-secondary">Reset</a>
+                @if (isAdmin || isRegistered)
+                {
+                    <a asp-action="Create" class="btn btn-success">Create Delivery</a>
+                }
+            </div>
+        </div>
+    </form>
+
+    <!-- 📦 Table -->
+    <table class="table table-bordered table-striped bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Shipment</th>
+                <th>Carrier</th>
+                <th>Route</th>
+                <th>Date Delivered</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var delivery in Model.Items)
+            {
+                <tr>
+                    <td>@delivery.ShipmentInfo</td>
+                    <td>@delivery.MailCarrierName</td>
+                    <td>@delivery.Route</td>
+                    <td>@delivery.DateDelivered.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        @if (isAdmin || isRegistered)
+                        {
+                            <a asp-action="Edit" asp-route-id="@delivery.DeliveryId" class="btn btn-sm btn-warning">Edit</a>
+                        }
+                        @if (isAdmin)
+                        {
+                            <a asp-action="Delete" asp-route-id="@delivery.DeliveryId" class="btn btn-sm btn-danger">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- 🔢 Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" asp-route-searchTerm="@ViewBag.CurrentSearch" asp-route-mailCarrierFilter="@ViewBag.CurrentCarrier">Previous</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                if (i == Model.PageIndex)
+                {
+                    <li class="page-item active"><span class="page-link">@i</span></li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-searchTerm="@ViewBag.CurrentSearch" asp-route-mailCarrierFilter="@ViewBag.CurrentCarrier">@i</a>
+                    </li>
+                }
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" asp-route-searchTerm="@ViewBag.CurrentSearch" asp-route-mailCarrierFilter="@ViewBag.CurrentCarrier">Next</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            }
+        </ul>
+    </nav>
+</div>

@@ -1,0 +1,152 @@
+﻿@model ShipmentSolution.Web.ViewModels.Common.PaginatedList<ShipmentSolution.Web.ViewModels.ShipmentViewModels.ShipmentViewModel>
+
+@{
+    ViewData["Title"] = "All Shipments";
+    Layout = "_Layout";
+}
+
+<!-- 🌄 Background Styling -->
+<style>
+    body {
+        background-image: url('/images/shipment4.jpg');
+        background-size: cover;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+    }
+
+    .content-wrapper {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        margin-top: 1rem;
+        border-radius: 12px;
+    }
+</style>
+
+<div class="container content-wrapper">
+    <h2>All Shipments</h2>
+
+    <!-- 🔍 Search and Filter Form -->
+    <form method="get" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Customer Name..." />
+        </div>
+        <div class="col-md-3">
+            <select name="shippingMethod" class="form-select">
+                <option value="">All Shipping Methods</option>
+                @foreach (var method in (List<string>)ViewBag.ShippingMethods)
+                {
+                    var selected = method == (string?)ViewBag.CurrentShippingMethod ? "selected=\"selected\"" : "";
+                    @Html.Raw($"<option value=\"{method}\" {selected}>{method}</option>")
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="Index" class="btn btn-secondary">Reset</a>
+        </div>
+    </form>
+
+    <!-- ➕ Create Button (Visible only to RegisteredUser or Administrator) -->
+    @if (User.Identity.IsAuthenticated && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
+    {
+        <a asp-action="Create" asp-controller="Shipment" class="btn btn-success mb-3">➕ Create New Shipment</a>
+    }
+
+    <!-- 📋 Shipment Table -->
+    <table class="table table-bordered table-striped bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>Customer</th>
+                <th>Shipping Method</th>
+                <th>Shipping Cost</th>
+                <th>Delivery Date</th>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <th>Actions</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var shipment in Model.Items)
+            {
+                <tr>
+                    <td>@shipment.CustomerName</td>
+                    <td>@shipment.ShippingMethod</td>
+                    <td>@shipment.ShippingCost.ToString("C")</td>
+                    <td>@(shipment.DeliveryDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <td>
+                            <!-- ✏️ Edit for RegisteredUser and Admin -->
+                            @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-warning me-2">Edit</a>
+                            }
+
+                            <!-- 🗑️ Delete only for Admin -->
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <a asp-action="Delete" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-danger">Delete</a>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- 🔢 Pagination Controls -->
+    <nav aria-label="Shipment pagination">
+        <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(Model.PageIndex - 1)"
+                       asp-route-searchTerm="@ViewBag.CurrentSearch"
+                       asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Previous</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                if (i == Model.PageIndex)
+                {
+                    <li class="page-item active"><span class="page-link">@i</span></li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch"
+                           asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">@i</a>
+                    </li>
+                }
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(Model.PageIndex + 1)"
+                       asp-route-searchTerm="@ViewBag.CurrentSearch"
+                       asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Next</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            }
+        </ul>
+    </nav>
+</div>

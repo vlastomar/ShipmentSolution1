@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<style>
+    .home-banner {
+        background-color: #e0f7fa; /* light blue */
+        padding: 80px 0;
+        text-align: center;
+    }
+
+    .home-banner h1 {
+        font-size: 4rem;
+        font-weight: bold;
+        color: #004d40;
+        margin-bottom: 40px;
+    }
+
+    .shipment-images {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+
+    .shipment-images img {
+        max-width: 300px;
+        height: auto;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+</style>
+
+<div class="home-banner">
+    <h1>SHIPMENT</h1>
+
+    <div class="shipment-images">
+        <img src="~/images/shipment1.jpg" alt="Shipment 1" />
+        <img src="~/images/shipment2.jpg" alt="Shipment 2" />
+        <img src="~/images/shipment3.jpg" alt="Shipment 3" />
+    </div>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+        <a href="@Url.Action("Index", "Shipment")" class="btn btn-primary btn-lg">View Shipments</a>
+        <a href="@Url.Action("Index", "Customer")" class="btn btn-secondary btn-lg">View Customers</a>
+        <a href="@Url.Action("Index", "MailCarrier")" class="btn btn-success btn-lg">View Mail Carriers</a>
+        <a href="@Url.Action("Index", "Route")" class="btn btn-info btn-lg">View Routes</a>
+        <a href="@Url.Action("Index", "Delivery")" class="btn btn-warning btn-lg">View Deliveries</a>
+    </div>
+</div>

@@ -1,0 +1,149 @@
+﻿@model ShipmentSolution.Web.ViewModels.Common.PaginatedList<ShipmentSolution.Web.ViewModels.MailCarrierViewModels.MailCarrierViewModel>
+
+@{
+    ViewData["Title"] = "All Mail Carriers";
+    Layout = "_Layout";
+}
+
+<!-- Background Styling -->
+<style>
+    body {
+        background-image: url('/images/shipment7.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    .content-wrapper {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="container content-wrapper">
+    <h2>All Mail Carriers</h2>
+
+    <!-- 🔍 Search and Filter -->
+    <form method="get" class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by name or email" />
+        </div>
+        <div class="col-md-3">
+            <select name="statusFilter" class="form-select">
+                <option value="">All Statuses</option>
+                @if (ViewBag.StatusOptions is List<string> statusOptions)
+                {
+                    foreach (var status in statusOptions)
+                    {
+                        <option value="@status" selected="@(status == (string?)ViewBag.CurrentStatus ? "selected" : null)">@status</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary me-2">Search</button>
+            <a asp-action="Index" class="btn btn-secondary">Reset</a>
+        </div>
+
+        <!-- ✅ Create Button for RegisteredUser or Admin -->
+        @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+        {
+            <div class="col-md-2 text-end">
+                <a asp-action="Create" class="btn btn-success">➕ Create New</a>
+            </div>
+        }
+    </form>
+
+    <!-- 📋 Mail Carrier Table -->
+    <table class="table table-hover table-bordered bg-white">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Current Location</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var carrier in Model.Items)
+            {
+                <tr>
+                    <td>@carrier.MailCarrierId</td>
+                    <td>@carrier.FullName</td>
+                    <td>@carrier.Email</td>
+                    <td>@carrier.PhoneNumber</td>
+                    <td>@carrier.Status</td>
+                    <td>@carrier.CurrentLocation</td>
+                    <td>
+                        <!-- ✅ Edit: RegisteredUser and Administrator -->
+                        @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@carrier.MailCarrierId" class="btn btn-warning btn-sm me-1">Edit</a>
+                        }
+
+                        <!-- ✅ Delete: Administrator only -->
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <a asp-action="Delete" asp-route-id="@carrier.MailCarrierId" class="btn btn-danger btn-sm">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- 🔢 Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index"
+                       asp-route-page="@(Model.PageIndex - 1)"
+                       asp-route-searchTerm="@ViewBag.CurrentSearch"
+                       asp-route-statusFilter="@ViewBag.CurrentStatus">Previous</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                if (i == Model.PageIndex)
+                {
+                    <li class="page-item active"><span class="page-link">@i</span></li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch"
+                           asp-route-statusFilter="@ViewBag.CurrentStatus">@i</a>
+                    </li>
+                }
+            }
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index"
+                       asp-route-page="@(Model.PageIndex + 1)"
+                       asp-route-searchTerm="@ViewBag.CurrentSearch"
+                       asp-route-statusFilter="@ViewBag.CurrentStatus">Next</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            }
+        </ul>
+    </nav>
+</div>

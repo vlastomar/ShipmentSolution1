@@ -1,0 +1,45 @@
+﻿@model ShipmentSolution.Web.ViewModels.RouteViewModels.RouteEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Route";
+}
+
+<h2>Edit Route</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="RouteId" />
+
+    <div class="form-group">
+        <label asp-for="StartLocation"></label>
+        <input asp-for="StartLocation" class="form-control" />
+        <span asp-validation-for="StartLocation" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="EndLocation"></label>
+        <input asp-for="EndLocation" class="form-control" />
+        <span asp-validation-for="EndLocation" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Stops"></label>
+        <input asp-for="Stops" class="form-control" />
+        <span asp-validation-for="Stops" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Distance"></label>
+        <input asp-for="Distance" class="form-control" />
+        <span asp-validation-for="Distance" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Priority"></label>
+        <select asp-for="Priority" class="form-control">
+            <option value="">-- Select Priority --</option>
+            <option value="0" selected="@(Model.Priority == 0)">Low</option>
+            <option value="1" selected="@(Model.Priority == 1)">Medium</option>
+            <option value="2" selected="@(Model.Priority == 2)">High</option>
+        </select>
+        <span asp-validation-for="Priority" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

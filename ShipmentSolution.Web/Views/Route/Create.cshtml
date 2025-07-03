@@ -1,0 +1,60 @@
+﻿@model ShipmentSolution.Web.ViewModels.RouteViewModels.RouteCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Route";
+}
+
+<h2>Create New Route</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label asp-for="StartLocation"></label>
+        <input asp-for="StartLocation" class="form-control" />
+        <span asp-validation-for="StartLocation" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="EndLocation"></label>
+        <input asp-for="EndLocation" class="form-control" />
+        <span asp-validation-for="EndLocation" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Stops"></label>
+        <input asp-for="Stops" class="form-control" />
+        <span asp-validation-for="Stops" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Distance"></label>
+        <input asp-for="Distance" class="form-control" />
+        <span asp-validation-for="Distance" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Priority"></label>
+        <select asp-for="Priority" class="form-control">
+            <option value="1">Low</option>
+            <option value="2">Medium</option>
+            <option value="3">High</option>
+        </select>
+        <span asp-validation-for="Priority" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MailCarrierId"></label>
+        <select asp-for="MailCarrierId" asp-items="Model.MailCarriers" class="form-control">
+            <option value="">-- Select Carrier --</option>
+        </select>
+        <span asp-validation-for="MailCarrierId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
