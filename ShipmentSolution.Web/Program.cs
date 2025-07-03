@@ -28,10 +28,10 @@ namespace ShipmentSolution.Web
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             })
-            .AddRoles<IdentityRole>() // Enable roles
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            // Register custom services
+            // Register your services
             builder.Services.AddScoped<IShipmentService, ShipmentService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
@@ -43,7 +43,7 @@ namespace ShipmentSolution.Web
 
             var app = builder.Build();
 
-            // Seed roles
+            // 🔐 Seed roles and assign admin
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -70,13 +70,16 @@ namespace ShipmentSolution.Web
                 }
             }
 
+            // 🌐 Middleware Pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                // 🔥 Custom error handling in production
+                app.UseExceptionHandler("/Home/Error500"); // Internal Server Error (500)
+                app.UseStatusCodePagesWithReExecute("/Home/Error{0}"); // Handles 404, 403, etc.
                 app.UseHsts();
             }
 

@@ -55,6 +55,7 @@ namespace ShipmentSolution.Web.Controllers
 
         [Authorize(Roles = "Administrator,RegisteredUser")]
         [HttpGet]
+
         public async Task<IActionResult> Edit(int id)
         {
             var model = await routeService.GetForEditAsync(id);

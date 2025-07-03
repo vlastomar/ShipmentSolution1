@@ -50,8 +50,9 @@ namespace ShipmentSolution.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize]
-        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var model = await shipmentService.GetForEditAsync(id);
