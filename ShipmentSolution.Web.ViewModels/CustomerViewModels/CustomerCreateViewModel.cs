@@ -29,7 +29,7 @@ namespace ShipmentSolution.Web.ViewModels.CustomerViewModels
         public string State { get; set; } = null!;
 
         [Required(ErrorMessage = "Zip Code is required.")]
-        [RegularExpression(@"^\d{5}(-\d{4})?$", ErrorMessage = "Enter a valid ZIP code.")]
+        //[RegularExpression(@"^\d{4,6}$", ErrorMessage = "ZipCode must be 4 to 6 digits.")]
         public string ZipCode { get; set; } = null!;
 
         [Required(ErrorMessage = "Preferred Shipping Method is required.")]

@@ -103,7 +103,15 @@ namespace ShipmentSolution.Web.Controllers
                 if (model == null)
                     return NotFound();
 
-                return View(model);
+                var deleteModel = new CustomerDeleteViewModel
+                {
+                    CustomerId = model.CustomerId,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email
+                };
+
+                return View(deleteModel);
             }
             catch (Exception)
             {
