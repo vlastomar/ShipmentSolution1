@@ -17,23 +17,38 @@ namespace ShipmentSolution.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? searchTerm, string? mailCarrierFilter, int page = 1)
         {
-            const int PageSize = 5;
+            try
+            {
+                const int PageSize = 5;
 
-            var model = await deliveryService.GetPaginatedAsync(page, PageSize, searchTerm, mailCarrierFilter);
+                var model = await deliveryService.GetPaginatedAsync(page, PageSize, searchTerm, mailCarrierFilter);
+                ViewBag.CurrentSearch = searchTerm;
+                ViewBag.CurrentCarrier = mailCarrierFilter;
+                ViewBag.MailCarrierOptions = await deliveryService.GetCarrierNamesAsync();
 
-            ViewBag.CurrentSearch = searchTerm;
-            ViewBag.CurrentCarrier = mailCarrierFilter;
-            ViewBag.MailCarrierOptions = await deliveryService.GetCarrierNamesAsync();
-
-            return View(model);
+                return View(model);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "Failed to load deliveries.");
+                return View();
+            }
         }
 
         [HttpGet]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Create()
         {
-            var model = await deliveryService.GetCreateModelAsync();
-            return View(model);
+            try
+            {
+                var model = await deliveryService.GetCreateModelAsync();
+                return View(model);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "Failed to load form data.");
+                return View();
+            }
         }
 
         [HttpPost]
@@ -41,17 +56,37 @@ namespace ShipmentSolution.Web.Controllers
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Create(DeliveryCreateViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-            await deliveryService.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                await deliveryService.CreateAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "Failed to create delivery.");
+                return View(model);
+            }
         }
 
         [HttpGet]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await deliveryService.GetForEditAsync(id);
-            return View(model);
+            try
+            {
+                var model = await deliveryService.GetForEditAsync(id);
+                if (model == null)
+                    return NotFound();
+
+                return View(model);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost]
@@ -59,17 +94,37 @@ namespace ShipmentSolution.Web.Controllers
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(DeliveryEditViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-            await deliveryService.EditAsync(model);
-            return RedirectToAction(nameof(Index));
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
+            {
+                await deliveryService.EditAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "Failed to update delivery.");
+                return View(model);
+            }
         }
 
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
-            var model = await deliveryService.GetByIdAsync(id);
-            return View(model);
+            try
+            {
+                var model = await deliveryService.GetByIdAsync(id);
+                if (model == null)
+                    return NotFound();
+
+                return View(model);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         [HttpPost, ActionName("Delete")]
@@ -77,8 +132,16 @@ namespace ShipmentSolution.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await deliveryService.SoftDeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await deliveryService.SoftDeleteAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Failed to delete delivery.";
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }

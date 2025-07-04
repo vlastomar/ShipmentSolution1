@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShipmentSolution.Data.Models;
+using ShipmentSolution.Web.ViewModels;
 using System.Diagnostics;
 
 namespace ShipmentSolution.Web.Controllers
@@ -15,31 +16,71 @@ namespace ShipmentSolution.Web.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading Index page.");
+                return RedirectToAction("Error500");
+            }
         }
 
         public IActionResult Privacy()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading Privacy page.");
+                return RedirectToAction("Error500");
+            }
         }
 
-        // Default error handler (used by default in development)
+        // Default error handler
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            try
+            {
+                return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error displaying error page.");
+                return RedirectToAction("Error500");
+            }
         }
 
-        // 🔴 404 Not Found custom page
+        // 404 Not Found custom page
         public IActionResult Error404()
         {
-            return View("Error404");
+            try
+            {
+                return View("Error404");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error displaying 404 page.");
+                return RedirectToAction("Error500");
+            }
         }
 
-        // 🔥 500 Internal Server Error custom page
+        // 500 Internal Server Error custom page
         public IActionResult Error500()
         {
-            return View("Error500");
+            try
+            {
+                return View("Error500");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical failure displaying 500 page.");
+                return Content("A critical error occurred and even the error page could not be displayed.");
+            }
         }
     }
 }

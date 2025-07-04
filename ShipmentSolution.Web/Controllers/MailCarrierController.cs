@@ -8,30 +8,40 @@ namespace ShipmentSolution.Web.Controllers
     public class MailCarrierController : Controller
     {
         private readonly IMailCarrierService mailCarrierService;
+        private readonly ILogger<MailCarrierController> logger;
 
-        public MailCarrierController(IMailCarrierService mailCarrierService)
+        public MailCarrierController(IMailCarrierService mailCarrierService, ILogger<MailCarrierController> logger)
         {
             this.mailCarrierService = mailCarrierService;
+            this.logger = logger;
         }
 
         public async Task<IActionResult> Index(string? searchTerm, string? statusFilter, int page = 1)
         {
             const int PageSize = 5;
 
-            var result = await mailCarrierService.GetPaginatedAsync(page, PageSize, searchTerm, statusFilter);
+            try
+            {
+                var result = await mailCarrierService.GetPaginatedAsync(page, PageSize, searchTerm, statusFilter);
 
-            ViewBag.CurrentSearch = searchTerm;
-            ViewBag.CurrentStatus = statusFilter;
+                ViewBag.CurrentSearch = searchTerm;
+                ViewBag.CurrentStatus = statusFilter;
 
-            var statusOptions = (await mailCarrierService.GetAllAsync())
-                .Select(c => c.Status)
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Distinct()
-                .ToList();
+                var statusOptions = (await mailCarrierService.GetAllAsync())
+                    .Select(c => c.Status)
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .Distinct()
+                    .ToList();
 
-            ViewBag.StatusOptions = statusOptions;
+                ViewBag.StatusOptions = statusOptions;
 
-            return View(result);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading MailCarrier list.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
@@ -44,16 +54,36 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Create(MailCarrierCreateViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
-            await mailCarrierService.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+
+            try
+            {
+                await mailCarrierService.CreateAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error creating MailCarrier.");
+                ModelState.AddModelError("", "An error occurred while creating the mail carrier.");
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await mailCarrierService.GetForEditAsync(id);
-            return View(model);
+            try
+            {
+                var model = await mailCarrierService.GetForEditAsync(id);
+                if (model == null) return NotFound();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading MailCarrier for edit.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
@@ -62,16 +92,36 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Edit(MailCarrierEditViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
-            await mailCarrierService.EditAsync(model);
-            return RedirectToAction(nameof(Index));
+
+            try
+            {
+                await mailCarrierService.EditAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error editing MailCarrier.");
+                ModelState.AddModelError("", "An error occurred while editing the mail carrier.");
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var model = await mailCarrierService.GetByIdAsync(id);
-            return View(model);
+            try
+            {
+                var model = await mailCarrierService.GetByIdAsync(id);
+                if (model == null) return NotFound();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading MailCarrier for deletion.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "Administrator")]
@@ -79,8 +129,16 @@ namespace ShipmentSolution.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await mailCarrierService.SoftDeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await mailCarrierService.SoftDeleteAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error deleting MailCarrier.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
     }
 }

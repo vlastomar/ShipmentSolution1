@@ -1,6 +1,5 @@
 ﻿using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.CustomerViewModels;
-using ShipmentSolution.Web.ViewModels.CustomerViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -8,31 +8,50 @@ namespace ShipmentSolution.Web.Controllers
     public class ShipmentController : Controller
     {
         private readonly IShipmentService shipmentService;
+        private readonly ILogger<ShipmentController> logger;
 
-        public ShipmentController(IShipmentService shipmentService)
+        public ShipmentController(IShipmentService shipmentService, ILogger<ShipmentController> logger)
         {
             this.shipmentService = shipmentService;
+            this.logger = logger;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index(string? searchTerm, string? shippingMethod, int page = 1)
         {
             const int PageSize = 5;
 
-            var model = await shipmentService.GetPaginatedAsync(page, PageSize, searchTerm, shippingMethod);
+            try
+            {
+                var model = await shipmentService.GetPaginatedAsync(page, PageSize, searchTerm, shippingMethod);
 
-            ViewBag.CurrentSearch = searchTerm;
-            ViewBag.CurrentShippingMethod = shippingMethod;
-            ViewBag.ShippingMethods = new List<string> { "Standard", "Express", "Next-Day" };
+                ViewBag.CurrentSearch = searchTerm;
+                ViewBag.CurrentShippingMethod = shippingMethod;
+                ViewBag.ShippingMethods = new List<string> { "Standard", "Express", "Next-Day" };
 
-            return View(model);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading shipments.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var model = await shipmentService.PrepareCreateViewModelAsync();
-            return View(model);
+            try
+            {
+                var model = await shipmentService.PrepareCreateViewModelAsync();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error preparing create shipment form.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [HttpPost]
@@ -46,17 +65,37 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
 
-            await shipmentService.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await shipmentService.CreateAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error creating shipment.");
+                ModelState.AddModelError("", "An error occurred while creating the shipment.");
+                model = await shipmentService.PrepareCreateViewModelAsync();
+                return View(model);
+            }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await shipmentService.GetForEditAsync(id);
-            return View(model);
+            try
+            {
+                var model = await shipmentService.GetForEditAsync(id);
+                if (model == null)
+                    return NotFound();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading shipment for editing.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [HttpPost]
@@ -70,27 +109,54 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
 
-            await shipmentService.EditAsync(model);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await shipmentService.EditAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error editing shipment.");
+                ModelState.AddModelError("", "An error occurred while editing the shipment.");
+                model.Customers = await shipmentService.GetCustomerListAsync();
+                return View(model);
+            }
         }
+
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
-            var model = await shipmentService.GetForDeleteAsync(id);
-            return View(model);
+            try
+            {
+                var model = await shipmentService.GetForDeleteAsync(id);
+                if (model == null)
+                    return NotFound();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading shipment for deletion.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
-        [Authorize(Roles = "Administrator")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await shipmentService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await shipmentService.DeleteAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error deleting shipment.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
-
-
-
     }
 }

@@ -8,34 +8,53 @@ namespace ShipmentSolution.Web.Controllers
     public class RouteController : Controller
     {
         private readonly IRouteService routeService;
+        private readonly ILogger<RouteController> logger;
 
-        public RouteController(IRouteService routeService)
+        public RouteController(IRouteService routeService, ILogger<RouteController> logger)
         {
             this.routeService = routeService;
+            this.logger = logger;
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? searchTerm, string? priorityFilter, int page = 1)
         {
             const int PageSize = 5;
-            var model = await routeService.GetPaginatedAsync(page, PageSize, searchTerm, priorityFilter);
 
-            ViewBag.CurrentSearch = searchTerm;
-            ViewBag.CurrentPriority = priorityFilter;
-            ViewBag.PriorityOptions = new List<string> { "High", "Medium", "Low" };
+            try
+            {
+                var model = await routeService.GetPaginatedAsync(page, PageSize, searchTerm, priorityFilter);
 
-            return View(model);
+                ViewBag.CurrentSearch = searchTerm;
+                ViewBag.CurrentPriority = priorityFilter;
+                ViewBag.PriorityOptions = new List<string> { "High", "Medium", "Low" };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading route list.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "Administrator,RegisteredUser")]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var model = new RouteCreateViewModel
+            try
             {
-                MailCarriers = await routeService.GetCarrierListAsync()
-            };
-            return View(model);
+                var model = new RouteCreateViewModel
+                {
+                    MailCarriers = await routeService.GetCarrierListAsync()
+                };
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading create route view.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "Administrator,RegisteredUser")]
@@ -49,18 +68,37 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
 
-            await routeService.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await routeService.CreateAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error creating route.");
+                ModelState.AddModelError("", "An error occurred while creating the route.");
+                model.MailCarriers = await routeService.GetCarrierListAsync();
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "Administrator,RegisteredUser")]
         [HttpGet]
-
         public async Task<IActionResult> Edit(int id)
         {
-            var model = await routeService.GetForEditAsync(id);
-            model.MailCarriers = await routeService.GetCarrierListAsync();
-            return View(model);
+            try
+            {
+                var model = await routeService.GetForEditAsync(id);
+                if (model == null) return NotFound();
+
+                model.MailCarriers = await routeService.GetCarrierListAsync();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading route for edit.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "Administrator,RegisteredUser")]
@@ -74,16 +112,36 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
 
-            await routeService.EditAsync(model);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await routeService.EditAsync(model);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error editing route.");
+                ModelState.AddModelError("", "An error occurred while updating the route.");
+                model.MailCarriers = await routeService.GetCarrierListAsync();
+                return View(model);
+            }
         }
 
         [Authorize(Roles = "Administrator")]
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var model = await routeService.GetDeleteViewModelAsync(id);
-            return View(model);
+            try
+            {
+                var model = await routeService.GetDeleteViewModelAsync(id);
+                if (model == null) return NotFound();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading route for deletion.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
 
         [Authorize(Roles = "Administrator")]
@@ -91,8 +149,16 @@ namespace ShipmentSolution.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await routeService.SoftDeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await routeService.SoftDeleteAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error deleting route.");
+                return RedirectToAction("Error500", "Home");
+            }
         }
     }
 }

@@ -11,7 +11,7 @@
     <p>Email: @Model.Email</p>
 </div>
 
-<!-- ✅ Correct Delete Form -->
+
 <form asp-action="DeleteConfirmed" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="id" value="@Model.CustomerId" />
