@@ -115,7 +115,7 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                var model = await deliveryService.GetByIdAsync(id);
+                var model = await deliveryService.GetDeleteViewModelAsync(id);
                 if (model == null)
                     return NotFound();
 

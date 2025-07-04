@@ -1,6 +1,5 @@
 ﻿using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.DeliveryViewModels;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +19,8 @@ namespace ShipmentSolution.Services.Core.Interfaces
         Task SoftDeleteAsync(int id);
         Task<PaginatedList<DeliveryViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? statusFilter);
         Task<List<string>> GetCarrierNamesAsync();
+        Task<DeliveryDeleteViewModel> GetDeleteViewModelAsync(int id);
+
 
 
 

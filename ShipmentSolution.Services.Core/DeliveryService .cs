@@ -266,5 +266,36 @@ namespace ShipmentSolution.Services.Core
                 .Distinct()
                 .ToListAsync();
         }
+        public async Task<DeliveryDeleteViewModel> GetDeleteViewModelAsync(int id)
+        {
+            try
+            {
+                var delivery = await context.Deliveries
+                    .Include(d => d.Shipment)
+                    .Include(d => d.MailCarrier)
+                    .Include(d => d.Route)
+                    .FirstOrDefaultAsync(d => d.DeliveryId == id);
+
+                if (delivery == null)
+                {
+                    throw new ArgumentException("Delivery not found.");
+                }
+
+                return new DeliveryDeleteViewModel
+                {
+                    DeliveryId = delivery.DeliveryId,
+                    ShipmentInfo = $"#{delivery.Shipment.ShipmentId} - {delivery.Shipment.ShippingMethod}",
+                    MailCarrierName = delivery.MailCarrier.FirstName + " " + delivery.MailCarrier.LastName,
+                    Route = $"{delivery.Route.StartLocation} → {delivery.Route.EndLocation}",
+                    DateDelivered = delivery.DateDelivered
+                };
+            }
+            catch (Exception ex)
+            {
+                // Optional: log the exception here if you have a logger injected
+                throw new ApplicationException("An error occurred while fetching the delivery for deletion.", ex);
+            }
+        }
+
     }
 }
