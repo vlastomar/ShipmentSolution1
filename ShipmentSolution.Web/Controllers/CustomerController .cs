@@ -25,7 +25,7 @@ namespace ShipmentSolution.Web.Controllers
             }
             catch (Exception ex)
             {
-                // Log the error (optional)
+                Console.WriteLine(ex); 
                 ModelState.AddModelError("", "An error occurred while loading the customers.");
                 return View();
             }

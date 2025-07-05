@@ -25,6 +25,7 @@
     <ProjectReference Include="..\ShipmentSolution.Data\ShipmentSolution.Data.csproj" />
     <ProjectReference Include="..\ShipmentSolution.Services.Core\ShipmentSolution.Services.Core.csproj" />
     <ProjectReference Include="..\ShipmentSolution.Web.ViewModels\ShipmentSolution.Web.ViewModels.csproj" />
+    <ProjectReference Include="..\ShipmentSolution.Web\ShipmentSolution.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
