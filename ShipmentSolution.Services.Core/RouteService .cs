@@ -62,18 +62,31 @@ namespace ShipmentSolution.Services.Core
 
         public async Task<RouteEditViewModel> GetForEditAsync(int id)
         {
-            var route = await context.Routes.FindAsync(id);
-
-            return new RouteEditViewModel
+            try
             {
-                RouteId = route.RouteId,
-                StartLocation = route.StartLocation,
-                EndLocation = route.EndLocation,
-                Stops = route.Stops.ToString(),
-                Distance = route.Distance,
-                Priority = route.Priority
-            };
+                var route = await context.Routes.FindAsync(id);
+
+                if (route == null)
+                {
+                    throw new Exception("Route not found.");
+                }
+
+                return new RouteEditViewModel
+                {
+                    RouteId = route.RouteId,
+                    StartLocation = route.StartLocation,
+                    EndLocation = route.EndLocation,
+                    Stops = route.Stops.ToString(),
+                    Distance = route.Distance,
+                    Priority = route.Priority
+                };
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
+
 
         public async Task EditAsync(RouteEditViewModel model)
         {
@@ -96,17 +109,33 @@ namespace ShipmentSolution.Services.Core
 
         public async Task<RouteViewModel> GetByIdAsync(int id)
         {
-            var entity = await context.Routes.FindAsync(id);
-            return new RouteViewModel
+            try
             {
-                RouteId = entity.RouteId,
-                StartLocation = entity.StartLocation,
-                EndLocation = entity.EndLocation,
-                Stops = entity.Stops,
-                Distance = entity.Distance,
-                Priority = entity.Priority.ToString()
-            };
+                var entity = await context.Routes.FindAsync(id);
+
+                if (entity == null)
+                {
+                    throw new Exception("Route not found.");
+                }
+
+                return new RouteViewModel
+                {
+                    RouteId = entity.RouteId,
+                    StartLocation = entity.StartLocation,
+                    EndLocation = entity.EndLocation,
+                    Stops = entity.Stops,
+                    Distance = entity.Distance,
+                    Priority = entity.Priority.ToString()
+                };
+            }
+            catch (Exception)
+            {
+                // Optional: log the error here if logging is set up
+                throw;
+            }
         }
+
+
 
         public async Task SoftDeleteAsync(int id)
         {

@@ -8,7 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ShipmentSolution.Tests
+namespace ShipmentSolution.Tests.Services
 {
     public class DeliveryServiceTests
     {
