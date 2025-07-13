@@ -33,9 +33,9 @@
         <label asp-for="Priority"></label>
         <select asp-for="Priority" class="form-control">
             <option value="">-- Select Priority --</option>
-            <option value="0" selected="@(Model.Priority == 0)">Low</option>
-            <option value="1" selected="@(Model.Priority == 1)">Medium</option>
-            <option value="2" selected="@(Model.Priority == 2)">High</option>
+            <option value="1" selected="@(Model.Priority == 0)">Low</option>
+            <option value="2" selected="@(Model.Priority == 1)">Medium</option>
+            <option value="3" selected="@(Model.Priority == 2)">High</option>
         </select>
         <span asp-validation-for="Priority" class="text-danger"></span>
     </div>

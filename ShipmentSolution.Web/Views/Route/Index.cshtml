@@ -21,10 +21,65 @@
     }
 
     .content-wrapper {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.4);
         padding: 2rem;
         border-radius: 10px;
         margin-top: 1rem;
+    }
+
+    .btn-transparent-green {
+        background-color: rgba(40, 167, 69, 0.4);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-green:hover {
+        background-color: rgba(40, 167, 69, 0.6);
+    }
+
+    .btn-transparent-yellow {
+        background-color: rgba(255, 193, 7, 0.4);
+        color: black;
+        border: none;
+    }
+
+    .btn-transparent-yellow:hover {
+        background-color: rgba(255, 193, 7, 0.6);
+    }
+
+    .btn-transparent-red {
+        background-color: rgba(220, 53, 69, 0.4);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-red:hover {
+        background-color: rgba(220, 53, 69, 0.6);
+    }
+
+    .btn-transparent-blue {
+        background-color: rgba(13, 110, 253, 0.3);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-blue:hover {
+        background-color: rgba(13, 110, 253, 0.5);
+    }
+
+    .form-select,
+    .form-control {
+        background-color: rgba(255, 255, 255, 0.85);
+    }
+
+    .pagination .page-link {
+        background-color: rgba(255, 255, 255, 0.6);
+        color: #000;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: rgba(0, 123, 255, 0.8);
+        color: white;
     }
 </style>
 
@@ -33,12 +88,9 @@
 
     <form method="get" class="mb-4">
         <div class="row g-2 align-items-end">
-            <!-- Search -->
             <div class="col-md-4">
                 <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Start or End..." />
             </div>
-
-            <!-- Priority Filter -->
             <div class="col-md-3">
                 <select name="priorityFilter" class="form-select">
                     <option value="">All Priorities</option>
@@ -50,18 +102,14 @@
                     }
                 </select>
             </div>
-
-            <!-- Search and Reset Buttons -->
             <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="submit" class="btn btn-transparent-blue">Search</button>
                 <a asp-action="Index" class="btn btn-secondary">Reset</a>
             </div>
-
-            <!-- Create Button -->
             <div class="col-md-2 text-end">
                 @if (isAdmin || isRegistered)
                 {
-                    <a asp-action="Create" class="btn btn-success">Create Route</a>
+                    <a asp-action="Create" class="btn btn-transparent-green">Create Route</a>
                 }
             </div>
         </div>
@@ -85,16 +133,16 @@
                 <td>@route.StartLocation</td>
                 <td>@route.EndLocation</td>
                 <td>@route.Stops</td>
-                <td>@route.Distance</td>
-                <td>@route.Priority</td>
+                <td>@route.Distance.ToString("0.##")</td>
+                <td>@route.PriorityDisplay</td>
                 <td>
                     @if (isAdmin || isRegistered)
                     {
-                        <a asp-action="Edit" asp-route-id="@route.RouteId" class="btn btn-warning btn-sm me-1">Edit</a>
+                        <a asp-action="Edit" asp-route-id="@route.RouteId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
                     }
                     @if (isAdmin)
                     {
-                        <a asp-action="Delete" asp-route-id="@route.RouteId" class="btn btn-danger btn-sm">Delete</a>
+                        <a asp-action="Delete" asp-route-id="@route.RouteId" class="btn btn-transparent-red btn-sm">Delete</a>
                     }
                 </td>
             </tr>
@@ -102,7 +150,6 @@
         </tbody>
     </table>
 
-    <!-- Pagination -->
     <nav aria-label="Pagination">
         <ul class="pagination justify-content-center">
             @if (Model.HasPreviousPage)
