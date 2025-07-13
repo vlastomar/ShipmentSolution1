@@ -32,13 +32,14 @@
 <div class="container content-wrapper">
     <h2>All Deliveries</h2>
 
-    <!-- 🔍 Search and Filter -->
+    <!-- 🔍 Search and Filter in one row with Create button -->
     <form asp-action="Index" method="get" class="mb-4">
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
                 <label class="form-label">Search</label>
                 <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Customer or Carrier name..." />
             </div>
+
             <div class="col-md-4">
                 <label class="form-label">Filter by Carrier</label>
                 <select name="mailCarrierFilter" class="form-select">
@@ -49,9 +50,12 @@
                     }
                 </select>
             </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary">Search</button>
-                <a asp-action="Index" class="btn btn-secondary">Reset</a>
+
+            <div class="col-md-4 d-flex justify-content-between align-items-end">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <a asp-action="Index" class="btn btn-secondary">Reset</a>
+                </div>
                 @if (isAdmin || isRegistered)
                 {
                     <a asp-action="Create" class="btn btn-success">Create Delivery</a>
@@ -60,7 +64,7 @@
         </div>
     </form>
 
-    <!--Table -->
+    <!-- Table -->
     <table class="table table-bordered table-striped bg-white">
         <thead class="table-dark">
             <tr>
