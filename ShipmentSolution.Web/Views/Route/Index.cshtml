@@ -31,33 +31,41 @@
 <div class="content-wrapper container">
     <h2>All Routes</h2>
 
-    <form method="get" class="row mb-3">
-        <div class="col-md-4">
-            <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Start or End..." />
-        </div>
-        <div class="col-md-3">
-            <select name="priorityFilter" class="form-select">
-                <option value="">All Priorities</option>
-                @foreach (var priority in (List<string>)ViewBag.PriorityOptions)
+    <form method="get" class="mb-4">
+        <div class="row g-2 align-items-end">
+            <!-- Search -->
+            <div class="col-md-4">
+                <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Start or End..." />
+            </div>
+
+            <!-- Priority Filter -->
+            <div class="col-md-3">
+                <select name="priorityFilter" class="form-select">
+                    <option value="">All Priorities</option>
+                    @foreach (var priority in (List<string>)ViewBag.PriorityOptions)
+                    {
+                        <option value="@priority" selected="@(priority == (string?)ViewBag.CurrentPriority)">
+                            @priority
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Search and Reset Buttons -->
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a asp-action="Index" class="btn btn-secondary">Reset</a>
+            </div>
+
+            <!-- Create Button -->
+            <div class="col-md-2 text-end">
+                @if (isAdmin || isRegistered)
                 {
-                    <option value="@priority" selected="@(priority == (string?)ViewBag.CurrentPriority)">
-                        @priority
-                    </option>
+                    <a asp-action="Create" class="btn btn-success">Create Route</a>
                 }
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-        <div class="col-md-2">
-            <a asp-action="Index" class="btn btn-secondary">Reset</a>
+            </div>
         </div>
     </form>
-
-    @if (isAdmin || isRegistered)
-    {
-        <a asp-action="Create" class="btn btn-success mb-3">Create Route</a>
-    }
 
     <table class="table table-bordered table-striped">
         <thead class="table-dark">

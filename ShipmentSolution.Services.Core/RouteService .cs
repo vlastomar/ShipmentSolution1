@@ -21,6 +21,17 @@ namespace ShipmentSolution.Services.Core
             this.context = context;
         }
 
+        private int MapTextToPriority(string? text)
+        {
+            return text switch
+            {
+                "Low" => 1,
+                "Medium" => 2,
+                "High" => 3,
+                _ => 0
+            };
+        }
+
         public async Task<IEnumerable<RouteViewModel>> GetAllAsync()
         {
             return await context.Routes
@@ -32,125 +43,96 @@ namespace ShipmentSolution.Services.Core
                     EndLocation = r.EndLocation,
                     Stops = r.Stops,
                     Distance = r.Distance,
-                    Priority = r.Priority.ToString()
+                    Priority = r.Priority
                 })
                 .ToListAsync();
         }
 
         public async Task CreateAsync(RouteCreateViewModel model)
         {
-            try
+            var entity = new Route
             {
-                var entity = new Route
-                {
-                    StartLocation = model.StartLocation,
-                    EndLocation = model.EndLocation,
-                    Stops = int.Parse(model.Stops),
-                    Distance = (float)model.Distance,
-                    Priority = model.Priority,
-                    MailCarrierId = model.MailCarrierId
-                };
+                StartLocation = model.StartLocation,
+                EndLocation = model.EndLocation,
+                Stops = int.Parse(model.Stops),
+                Distance = (float)model.Distance,
+                Priority = model.Priority,
+                MailCarrierId = model.MailCarrierId
+            };
 
-                context.Routes.Add(entity);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            context.Routes.Add(entity);
+            await context.SaveChangesAsync();
         }
 
         public async Task<RouteEditViewModel> GetForEditAsync(int id)
         {
-            try
-            {
-                var route = await context.Routes.FindAsync(id);
+            var route = await context.Routes.FindAsync(id)
+                ?? throw new Exception("Route not found.");
 
-                if (route == null)
-                {
-                    throw new Exception("Route not found.");
-                }
-
-                return new RouteEditViewModel
-                {
-                    RouteId = route.RouteId,
-                    StartLocation = route.StartLocation,
-                    EndLocation = route.EndLocation,
-                    Stops = route.Stops.ToString(),
-                    Distance = route.Distance,
-                    Priority = route.Priority
-                };
-            }
-            catch (Exception)
+            return new RouteEditViewModel
             {
-                throw;
-            }
+                RouteId = route.RouteId,
+                StartLocation = route.StartLocation,
+                EndLocation = route.EndLocation,
+                Stops = route.Stops.ToString(),
+                Distance = route.Distance,
+                Priority = route.Priority
+            };
         }
-
 
         public async Task EditAsync(RouteEditViewModel model)
         {
-            try
-            {
-                var route = await context.Routes.FindAsync(model.RouteId);
-                route.StartLocation = model.StartLocation;
-                route.EndLocation = model.EndLocation;
-                route.Stops = int.Parse(model.Stops);
-                route.Distance = (float)model.Distance;
-                route.Priority = model.Priority;
+            var route = await context.Routes.FindAsync(model.RouteId)
+                ?? throw new Exception("Route not found.");
 
-                await context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            route.StartLocation = model.StartLocation;
+            route.EndLocation = model.EndLocation;
+            route.Stops = int.Parse(model.Stops);
+            route.Distance = (float)model.Distance;
+            route.Priority = model.Priority;
+
+            await context.SaveChangesAsync();
         }
 
         public async Task<RouteViewModel> GetByIdAsync(int id)
         {
-            try
-            {
-                var entity = await context.Routes.FindAsync(id);
+            var entity = await context.Routes.FindAsync(id)
+                ?? throw new Exception("Route not found.");
 
-                if (entity == null)
-                {
-                    throw new Exception("Route not found.");
-                }
-
-                return new RouteViewModel
-                {
-                    RouteId = entity.RouteId,
-                    StartLocation = entity.StartLocation,
-                    EndLocation = entity.EndLocation,
-                    Stops = entity.Stops,
-                    Distance = entity.Distance,
-                    Priority = entity.Priority.ToString()
-                };
-            }
-            catch (Exception)
+            return new RouteViewModel
             {
-                // Optional: log the error here if logging is set up
-                throw;
-            }
+                RouteId = entity.RouteId,
+                StartLocation = entity.StartLocation,
+                EndLocation = entity.EndLocation,
+                Stops = entity.Stops,
+                Distance = entity.Distance,
+                Priority = entity.Priority
+            };
         }
 
+        public async Task<RouteDeleteViewModel> GetDeleteViewModelAsync(int id)
+        {
+            var route = await context.Routes.FindAsync(id)
+                ?? throw new Exception("Route not found.");
 
+            return new RouteDeleteViewModel
+            {
+                RouteId = route.RouteId,
+                StartLocation = route.StartLocation,
+                EndLocation = route.EndLocation,
+                Stops = route.Stops,
+                Distance = route.Distance,
+                Priority = route.Priority
+            };
+        }
 
         public async Task SoftDeleteAsync(int id)
         {
-            try
+            var route = await context.Routes.FindAsync(id);
+            if (route != null)
             {
-                var route = await context.Routes.FindAsync(id);
-                if (route != null)
-                {
-                    route.IsDeleted = true;
-                    await context.SaveChangesAsync();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
+                route.IsDeleted = true;
+                await context.SaveChangesAsync();
             }
         }
 
@@ -164,21 +146,6 @@ namespace ShipmentSolution.Services.Core
                     Text = c.FirstName
                 })
                 .ToListAsync();
-        }
-
-        public async Task<RouteDeleteViewModel> GetDeleteViewModelAsync(int id)
-        {
-            var route = await context.Routes.FindAsync(id);
-
-            return new RouteDeleteViewModel
-            {
-                RouteId = route.RouteId,
-                StartLocation = route.StartLocation,
-                EndLocation = route.EndLocation,
-                Stops = route.Stops,
-                Distance = route.Distance,
-                Priority = route.Priority.ToString()
-            };
         }
 
         public async Task<PaginatedList<RouteViewModel>> GetPaginatedAsync(
@@ -196,7 +163,11 @@ namespace ShipmentSolution.Services.Core
 
             if (!string.IsNullOrWhiteSpace(priorityFilter))
             {
-                query = query.Where(r => r.Priority.ToString() == priorityFilter);
+                int parsedPriority = MapTextToPriority(priorityFilter);
+                if (parsedPriority > 0)
+                {
+                    query = query.Where(r => r.Priority == parsedPriority);
+                }
             }
 
             var totalCount = await query.CountAsync();
@@ -209,7 +180,7 @@ namespace ShipmentSolution.Services.Core
                     EndLocation = r.EndLocation,
                     Stops = r.Stops,
                     Distance = r.Distance,
-                    Priority = r.Priority.ToString()
+                    Priority = r.Priority
                 })
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)

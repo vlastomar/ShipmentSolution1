@@ -33,7 +33,7 @@ namespace ShipmentSolution.Tests.Controllers
             {
                 Items = new List<RouteViewModel>
                 {
-                    new RouteViewModel { RouteId = 1, StartLocation = "A", EndLocation = "B", Priority = "High" }
+                    new RouteViewModel { RouteId = 1, StartLocation = "A", EndLocation = "B", Priority = 3 }
                 }
             };
 

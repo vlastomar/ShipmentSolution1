@@ -73,8 +73,10 @@ namespace ShipmentSolution.Web
             // 🌐 Middleware Pipeline
             if (app.Environment.IsDevelopment())
             {
-                app.UseMigrationsEndPoint();
+                app.UseDeveloperExceptionPage(); // This shows full stack traces in browser
+                app.UseMigrationsEndPoint();     // Optional: shows EF migration errors
             }
+
             else
             {
                 // 🔥 Custom error handling in production

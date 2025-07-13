@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShipmentSolution.Web.ViewModels.RouteViewModels
 {
@@ -13,6 +9,16 @@ namespace ShipmentSolution.Web.ViewModels.RouteViewModels
         public string EndLocation { get; set; } = null!;
         public int Stops { get; set; }
         public double Distance { get; set; }
-        public string Priority { get; set; } = null!;
+
+        public int Priority { get; set; } 
+
+        public string PriorityDisplay => Priority switch
+        {
+            1 => "Low",
+            2 => "Medium",
+            3 => "High",
+            _ => "Unknown"
+        };
     }
+
 }
