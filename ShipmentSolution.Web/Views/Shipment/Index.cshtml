@@ -50,12 +50,12 @@
         <div class="col-md-2 text-end">
             @if (User.Identity.IsAuthenticated && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
             {
-                <a asp-action="Create" asp-controller="Shipment" class="btn btn-success">Create New Shipment</a>
+                <a asp-action="Create" asp-controller="Shipment" class="btn btn-success">Create Shipment</a>
             }
         </div>
     </form>
 
-    <!-- 📋 Shipment Table -->
+    <!-- Shipment Table -->
     <table class="table table-bordered table-striped bg-white">
         <thead class="table-dark">
             <tr>
@@ -96,7 +96,7 @@
         </tbody>
     </table>
 
-    <!-- 🔢 Pagination (unchanged) -->
+    <!-- Pagination (unchanged) -->
     <nav aria-label="Shipment pagination">
         <ul class="pagination justify-content-center">
             @if (Model.HasPreviousPage)
