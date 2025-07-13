@@ -25,11 +25,12 @@
 <div class="container content-wrapper">
     <h2>All Shipments</h2>
 
-    <!-- 🔍 Search and Filter Form -->
-    <form method="get" class="row mb-3">
+    <!-- Search / Reset / Create in one row -->
+    <form method="get" class="row mb-3 align-items-end">
         <div class="col-md-4">
             <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Customer Name..." />
         </div>
+
         <div class="col-md-3">
             <select name="shippingMethod" class="form-select">
                 <option value="">All Shipping Methods</option>
@@ -40,19 +41,19 @@
                 }
             </select>
         </div>
-        <div class="col-md-2">
+
+        <div class="col-md-3 d-flex gap-2">
             <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-        <div class="col-md-2">
             <a asp-action="Index" class="btn btn-secondary">Reset</a>
         </div>
-    </form>
 
-    <!-- ➕ Create Button (Visible only to RegisteredUser or Administrator) -->
-    @if (User.Identity.IsAuthenticated && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
-    {
-        <a asp-action="Create" asp-controller="Shipment" class="btn btn-success mb-3">➕ Create New Shipment</a>
-    }
+        <div class="col-md-2 text-end">
+            @if (User.Identity.IsAuthenticated && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
+            {
+                <a asp-action="Create" asp-controller="Shipment" class="btn btn-success">Create New Shipment</a>
+            }
+        </div>
+    </form>
 
     <!-- 📋 Shipment Table -->
     <table class="table table-bordered table-striped bg-white">
@@ -79,13 +80,11 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <td>
-                            <!-- ✏️ Edit for RegisteredUser and Admin -->
                             @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
                             {
                                 <a asp-action="Edit" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-warning me-2">Edit</a>
                             }
 
-                            <!-- 🗑️ Delete only for Admin -->
                             @if (User.IsInRole("Administrator"))
                             {
                                 <a asp-action="Delete" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-danger">Delete</a>
@@ -97,7 +96,7 @@
         </tbody>
     </table>
 
-    <!-- 🔢 Pagination Controls -->
+    <!-- 🔢 Pagination (unchanged) -->
     <nav aria-label="Shipment pagination">
         <ul class="pagination justify-content-center">
             @if (Model.HasPreviousPage)

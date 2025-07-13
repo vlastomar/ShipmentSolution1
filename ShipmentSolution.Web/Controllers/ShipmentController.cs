@@ -27,7 +27,7 @@ namespace ShipmentSolution.Web.Controllers
 
                 ViewBag.CurrentSearch = searchTerm;
                 ViewBag.CurrentShippingMethod = shippingMethod;
-                ViewBag.ShippingMethods = new List<string> { "Standard", "Express", "Next-Day" };
+                ViewBag.ShippingMethods = new List<string> { "Express", "Ground" };
 
                 return View(model);
             }

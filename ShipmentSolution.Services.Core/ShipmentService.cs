@@ -115,6 +115,9 @@ namespace ShipmentSolution.Services.Core
             {
                 var shipment = await context.Shipments.FindAsync(id);
 
+                if (shipment == null)
+                    throw new ArgumentException("Shipment not found");
+
                 return new ShipmentEditViewModel
                 {
                     ShipmentId = shipment.ShipmentId,
