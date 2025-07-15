@@ -5,7 +5,6 @@
     Layout = "_Layout";
 }
 
-<!-- Background Styling -->
 <style>
     body {
         background-image: url('/images/shipment7.jpg');
@@ -20,13 +19,77 @@
         border-radius: 12px;
         margin-top: 1rem;
     }
+
+    .form-control,
+    .form-select {
+        background-color: rgba(255, 255, 255, 0.75);
+    }
+
+    .btn-transparent-green {
+        background-color: rgba(40, 167, 69, 0.4);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-green:hover {
+        background-color: rgba(40, 167, 69, 0.6);
+    }
+
+    .btn-transparent-yellow {
+        background-color: rgba(255, 193, 7, 0.4);
+        color: black;
+        border: none;
+    }
+
+    .btn-transparent-yellow:hover {
+        background-color: rgba(255, 193, 7, 0.6);
+    }
+
+    .btn-transparent-red {
+        background-color: rgba(220, 53, 69, 0.4);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-red:hover {
+        background-color: rgba(220, 53, 69, 0.6);
+    }
+
+    .btn-transparent-blue {
+        background-color: rgba(13, 110, 253, 0.3);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-blue:hover {
+        background-color: rgba(13, 110, 253, 0.5);
+    }
+
+    .table thead {
+        background-color: rgba(33, 37, 41, 0.85);
+        color: white;
+    }
+
+    .table tbody tr {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .pagination .page-link {
+        background-color: rgba(255, 255, 255, 0.6);
+        color: #000;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: rgba(0, 123, 255, 0.8);
+        color: white;
+    }
 </style>
 
 <div class="container content-wrapper">
     <h2>All Mail Carriers</h2>
 
     <!-- 🔍 Search and Filter -->
-    <form method="get" class="row mb-3">
+    <form method="get" class="row mb-3 align-items-end">
         <div class="col-md-4">
             <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by name or email" />
         </div>
@@ -42,23 +105,21 @@
                 }
             </select>
         </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-primary me-2">Search</button>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-transparent-blue">Search</button>
             <a asp-action="Index" class="btn btn-secondary">Reset</a>
         </div>
-
-        <!-- ✅ Create Button for RegisteredUser or Admin -->
         @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
         {
             <div class="col-md-2 text-end">
-                <a asp-action="Create" class="btn btn-success">Create Mail Carrier</a>
+                <a asp-action="Create" class="btn btn-transparent-green">Create Mail Carrier</a>
             </div>
         }
     </form>
 
     <!-- 📋 Mail Carrier Table -->
-    <table class="table table-hover table-bordered bg-white">
-        <thead class="table-dark">
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
                 <th>ID</th>
                 <th>Name</th>
@@ -80,16 +141,13 @@
                     <td>@carrier.Status</td>
                     <td>@carrier.CurrentLocation</td>
                     <td>
-                        <!-- ✅ Edit: RegisteredUser and Administrator -->
                         @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
                         {
-                            <a asp-action="Edit" asp-route-id="@carrier.MailCarrierId" class="btn btn-warning btn-sm me-1">Edit</a>
+                            <a asp-action="Edit" asp-route-id="@carrier.MailCarrierId" class="btn btn-sm btn-transparent-yellow me-2">Edit</a>
                         }
-
-                        <!-- ✅ Delete: Administrator only -->
                         @if (User.IsInRole("Administrator"))
                         {
-                            <a asp-action="Delete" asp-route-id="@carrier.MailCarrierId" class="btn btn-danger btn-sm">Delete</a>
+                            <a asp-action="Delete" asp-route-id="@carrier.MailCarrierId" class="btn btn-sm btn-transparent-red">Delete</a>
                         }
                     </td>
                 </tr>
