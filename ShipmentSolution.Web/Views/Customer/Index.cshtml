@@ -5,7 +5,6 @@
     Layout = "_Layout";
 }
 
-<!-- Background Styling -->
 <style>
     body {
         background-image: url('/images/shipment5.jpg');
@@ -20,19 +19,87 @@
         margin-top: 1rem;
         border-radius: 12px;
     }
+
+    .btn-transparent-green {
+        background-color: rgba(40, 167, 69, 0.4);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-green:hover {
+        background-color: rgba(40, 167, 69, 0.6);
+    }
+
+    .btn-transparent-yellow {
+        background-color: rgba(255, 193, 7, 0.4);
+        color: black;
+        border: none;
+    }
+
+    .btn-transparent-yellow:hover {
+        background-color: rgba(255, 193, 7, 0.6);
+    }
+
+    .btn-transparent-red {
+        background-color: rgba(220, 53, 69, 0.4);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-red:hover {
+        background-color: rgba(220, 53, 69, 0.6);
+    }
+
+    .btn-transparent-blue {
+        background-color: rgba(13, 110, 253, 0.3);
+        color: white;
+        border: none;
+    }
+
+    .btn-transparent-blue:hover {
+        background-color: rgba(13, 110, 253, 0.5);
+    }
+
+    .form-control,
+    .form-select {
+        background-color: rgba(255, 255, 255, 0.85);
+    }
+
+    table {
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .table tbody tr {
+        background-color: transparent;
+    }
+
+    .table-bordered td,
+    .table-bordered th {
+        border-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .pagination .page-link {
+        background-color: rgba(255, 255, 255, 0.6);
+        color: #000;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: rgba(0, 123, 255, 0.8);
+        color: white;
+    }
 </style>
 
 <div class="container content-wrapper">
     <h2>All Customers</h2>
 
     <!-- Search + Buttons -->
-    <form method="get" class="row mb-3">
+    <form method="get" class="row mb-3 align-items-end">
         <div class="col-md-4">
             <input type="text" name="searchTerm" class="form-control" placeholder="Search by name or email"
                    value="@ViewBag.CurrentSearch" />
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Search</button>
+            <button type="submit" class="btn btn-transparent-blue w-100">Search</button>
         </div>
         <div class="col-md-2">
             <a asp-action="Index" class="btn btn-secondary w-100">Reset</a>
@@ -40,13 +107,13 @@
         <div class="col-md-4 text-end">
             @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
             {
-                <a asp-action="Create" class="btn btn-success">Create Customer</a>
+                <a asp-action="Create" class="btn btn-transparent-green">Create Customer</a>
             }
         </div>
     </form>
 
     <!-- Customer Table -->
-    <table class="table table-bordered table-striped bg-white">
+    <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
@@ -70,11 +137,10 @@
                     @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
                     {
                         <td>
-                            <a asp-action="Edit" asp-route-id="@customer.CustomerId" class="btn btn-warning btn-sm me-1">Edit</a>
-
+                            <a asp-action="Edit" asp-route-id="@customer.CustomerId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
                             @if (User.IsInRole("Administrator"))
                             {
-                                <a asp-action="Delete" asp-route-id="@customer.CustomerId" class="btn btn-danger btn-sm">Delete</a>
+                                <a asp-action="Delete" asp-route-id="@customer.CustomerId" class="btn btn-transparent-red btn-sm">Delete</a>
                             }
                         </td>
                     }
@@ -84,63 +150,55 @@
     </table>
 
     <!-- Pagination Controls -->
-    
-</div>
-@if (Model.TotalPages > 1)
-{
-    <nav aria-label="Customer pagination">
-        <ul class="pagination justify-content-center">
-            @if (Model.HasPreviousPage)
-            {
-                <li class="page-item">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(Model.PageIndex - 1)"
-                       asp-route-searchTerm="@ViewBag.CurrentSearch">
-                        Previous
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled"><span class="page-link">Previous</span></li>
-            }
-
-            @for (int i = 1; i <= Model.TotalPages; i++)
-            {
-                if (i == Model.PageIndex)
-                {
-                    <li class="page-item active"><span class="page-link">@i</span></li>
-                }
-                else
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Customer pagination">
+            <ul class="pagination justify-content-center">
+                @if (Model.HasPreviousPage)
                 {
                     <li class="page-item">
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-page="@i"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch">
-                            @i
-                        </a>
+                           asp-route-page="@(Model.PageIndex - 1)"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch">Previous</a>
                     </li>
                 }
-            }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                }
 
-            @if (Model.HasNextPage)
-            {
-                <li class="page-item">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(Model.PageIndex + 1)"
-                       asp-route-searchTerm="@ViewBag.CurrentSearch">
-                        Next
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled"><span class="page-link">Next</span></li>
-            }
-        </ul>
-    </nav>
-}
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == Model.PageIndex)
+                    {
+                        <li class="page-item active"><span class="page-link">@i</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-searchTerm="@ViewBag.CurrentSearch">@i</a>
+                        </li>
+                    }
+                }
 
+                @if (Model.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageIndex + 1)"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch">Next</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
