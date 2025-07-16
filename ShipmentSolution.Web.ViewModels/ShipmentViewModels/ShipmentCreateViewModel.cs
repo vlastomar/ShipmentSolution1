@@ -17,7 +17,6 @@ namespace ShipmentSolution.Web.ViewModels.ShipmentViewModels
         public string Dimensions { get; set; } = null!;
 
         [Required(ErrorMessage = "Shipping method is required.")]
-        [StringLength(50, ErrorMessage = "Shipping method must be under 50 characters.")]
         [Display(Name = "Shipping Method")]
         public string ShippingMethod { get; set; } = null!;
 
@@ -42,9 +41,9 @@ namespace ShipmentSolution.Web.ViewModels.ShipmentViewModels
         [Display(Name = "Route")]
         public int RouteId { get; set; }
 
-        // Dropdown data
         public IEnumerable<SelectListItem> Customers { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> Carriers { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> Routes { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> ShippingMethods { get; set; } = new List<SelectListItem>();
     }
 }

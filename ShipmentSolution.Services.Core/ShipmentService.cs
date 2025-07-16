@@ -49,7 +49,8 @@ namespace ShipmentSolution.Services.Core
                 {
                     Customers = await GetCustomerListAsync(),
                     Carriers = await GetCarrierListAsync(),
-                    Routes = await GetRouteListAsync()
+                    Routes = await GetRouteListAsync(),
+                    ShippingMethods = GetStaticShippingMethods()
                 };
             }
             catch
