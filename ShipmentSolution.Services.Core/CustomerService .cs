@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ShipmentSolution.Data;
 using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core.Interfaces;
@@ -14,6 +15,17 @@ namespace ShipmentSolution.Services.Core
         public CustomerService(ApplicationDbContext context)
         {
             this.context = context;
+        }
+
+        private IEnumerable<SelectListItem> GetShippingMethodOptions()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Text = "-- Select Method --", Value = "" },
+                new SelectListItem { Text = "Standard", Value = "Standard" },
+                new SelectListItem { Text = "Express", Value = "Express" },
+                new SelectListItem { Text = "Overnight", Value = "Overnight" }
+            };
         }
 
         public async Task<IEnumerable<CustomerViewModel>> GetAllAsync()
@@ -75,7 +87,8 @@ namespace ShipmentSolution.Services.Core
                 State = customer.State,
                 ZipCode = customer.ZipCode,
                 PreferredShippingMethod = customer.PreferredShippingMethod,
-                ShippingCostThreshold = customer.ShippingCostThreshold
+                ShippingCostThreshold = customer.ShippingCostThreshold,
+                ShippingMethodOptions = GetShippingMethodOptions()
             };
         }
 
@@ -199,5 +212,7 @@ namespace ShipmentSolution.Services.Core
                 TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
             };
         }
+
+        public IEnumerable<SelectListItem> GetShippingMethodOptionsPublic() => GetShippingMethodOptions();
     }
 }

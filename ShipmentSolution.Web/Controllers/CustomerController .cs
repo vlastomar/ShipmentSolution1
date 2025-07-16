@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.CustomerViewModels;
 
@@ -25,7 +26,7 @@ namespace ShipmentSolution.Web.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex); 
+                Console.WriteLine(ex);
                 ModelState.AddModelError("", "An error occurred while loading the customers.");
                 return View();
             }
@@ -33,7 +34,15 @@ namespace ShipmentSolution.Web.Controllers
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         [HttpGet]
-        public IActionResult Create() => View();
+        public IActionResult Create()
+        {
+            var model = new CustomerCreateViewModel
+            {
+                ShippingMethodOptions = GetShippingMethods()
+            };
+
+            return View(model);
+        }
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         [HttpPost]
@@ -41,7 +50,10 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Create(CustomerCreateViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                model.ShippingMethodOptions = GetShippingMethods();
                 return View(model);
+            }
 
             try
             {
@@ -51,6 +63,7 @@ namespace ShipmentSolution.Web.Controllers
             catch (Exception)
             {
                 ModelState.AddModelError("", "Failed to create customer. Please try again.");
+                model.ShippingMethodOptions = GetShippingMethods();
                 return View(model);
             }
         }
@@ -65,6 +78,7 @@ namespace ShipmentSolution.Web.Controllers
                 if (model == null)
                     return NotFound();
 
+                model.ShippingMethodOptions = GetShippingMethods();
                 return View(model);
             }
             catch (Exception)
@@ -79,7 +93,10 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Edit(CustomerEditViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                model.ShippingMethodOptions = GetShippingMethods();
                 return View(model);
+            }
 
             try
             {
@@ -89,6 +106,7 @@ namespace ShipmentSolution.Web.Controllers
             catch (Exception)
             {
                 ModelState.AddModelError("", "Failed to update customer. Please try again.");
+                model.ShippingMethodOptions = GetShippingMethods();
                 return View(model);
             }
         }
@@ -131,10 +149,20 @@ namespace ShipmentSolution.Web.Controllers
             }
             catch (Exception)
             {
-                // log the error
                 TempData["Error"] = "Failed to delete customer.";
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        // 🔹 Helper method to populate dropdown list
+        private List<SelectListItem> GetShippingMethods()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Text = "-- Select Method --", Value = "" },
+                new SelectListItem { Text = "Standard", Value = "Standard" },
+                new SelectListItem { Text = "Express", Value = "Express" }
+            };
         }
     }
 }
