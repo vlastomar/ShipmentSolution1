@@ -57,14 +57,21 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Create(DeliveryCreateViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                // repopulate dropdowns before returning the form
+                model = await deliveryService.GetCreateModelAsync();
+                model.ShipmentId = model.ShipmentId;
+                model.MailCarrierId = model.MailCarrierId;
+                model.RouteId = model.RouteId;
                 return View(model);
+            }
 
             try
             {
                 await deliveryService.CreateAsync(model);
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception)
+            catch
             {
                 ModelState.AddModelError("", "Failed to create delivery.");
                 return View(model);

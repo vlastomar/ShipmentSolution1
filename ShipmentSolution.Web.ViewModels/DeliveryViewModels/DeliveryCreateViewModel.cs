@@ -25,5 +25,6 @@ namespace ShipmentSolution.Web.ViewModels.DeliveryViewModels
         public IEnumerable<SelectListItem> Shipments { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> MailCarriers { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> Routes { get; set; } = new List<SelectListItem>();
+
     }
 }
