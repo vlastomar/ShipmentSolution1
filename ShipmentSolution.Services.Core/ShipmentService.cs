@@ -47,26 +47,9 @@ namespace ShipmentSolution.Services.Core
             {
                 return new ShipmentCreateViewModel
                 {
-                    Customers = await context.Customers
-                        .Select(c => new SelectListItem
-                        {
-                            Value = c.CustomerId.ToString(),
-                            Text = $"{c.FirstName} {c.LastName}"
-                        }).ToListAsync(),
-
-                    Carriers = await context.MailCarriers
-                        .Select(c => new SelectListItem
-                        {
-                            Value = c.MailCarrierId.ToString(),
-                            Text = c.FirstName
-                        }).ToListAsync(),
-
-                    Routes = await context.Routes
-                        .Select(r => new SelectListItem
-                        {
-                            Value = r.RouteId.ToString(),
-                            Text = $"{r.StartLocation} → {r.EndLocation}"
-                        }).ToListAsync()
+                    Customers = await GetCustomerListAsync(),
+                    Carriers = await GetCarrierListAsync(),
+                    Routes = await GetRouteListAsync()
                 };
             }
             catch
@@ -127,12 +110,8 @@ namespace ShipmentSolution.Services.Core
                     ShippingCost = shipment.ShippingCost,
                     DeliveryDate = shipment.DeliveryDate,
                     CustomerId = shipment.CustomerId,
-                    Customers = await context.Customers
-                        .Select(c => new SelectListItem
-                        {
-                            Value = c.CustomerId.ToString(),
-                            Text = c.FirstName + " " + c.LastName
-                        }).ToListAsync()
+                    Customers = await GetCustomerListAsync(),
+                    ShippingMethods = GetStaticShippingMethods()
                 };
             }
             catch
@@ -305,6 +284,15 @@ namespace ShipmentSolution.Services.Core
             {
                 return new List<SelectListItem>();
             }
+        }
+
+        private List<SelectListItem> GetStaticShippingMethods()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Value = "Ground", Text = "Ground" },
+                new SelectListItem { Value = "Express", Text = "Express" }
+            };
         }
     }
 }

@@ -39,5 +39,6 @@ namespace ShipmentSolution.Web.ViewModels.ShipmentViewModels
         public int CustomerId { get; set; }
 
         public IEnumerable<SelectListItem> Customers { get; set; } = new List<SelectListItem>();
+        public IEnumerable<SelectListItem> ShippingMethods { get; set; } = new List<SelectListItem>();
     }
 }
