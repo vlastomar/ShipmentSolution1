@@ -4,9 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ShipmentSolution.Web</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ShipmentSolution.Web.styles.css" asp-append-version="true" />
+
+    @RenderSection("Styles", required: false)
 
     <style>
         /*Light Blue Navbar Background */
@@ -20,15 +23,13 @@
             transition: color 0.3s ease;
         }
 
-        /*Colors match main buttons */
-        .navbar-nav .nav-item:nth-child(1) .nav-link { color: #0d6efd !important; }  /* Home (blue) */
-        .navbar-nav .nav-item:nth-child(2) .nav-link { color: #0d6efd !important; }  /* Shipments (blue) */
-        .navbar-nav .nav-item:nth-child(3) .nav-link { color: #6c757d !important; }  /* Customers (gray) */
-        .navbar-nav .nav-item:nth-child(4) .nav-link { color: #ffc107 !important; }  /* Deliveries (yellow) */
-        .navbar-nav .nav-item:nth-child(5) .nav-link { color: #198754 !important; }  /* Mail Carriers (green) */
-        .navbar-nav .nav-item:nth-child(6) .nav-link { color: #0dcaf0 !important; }  /* Routes (cyan) */
+        .navbar-nav .nav-item:nth-child(1) .nav-link { color: #0d6efd !important; }  /* Home */
+        .navbar-nav .nav-item:nth-child(2) .nav-link { color: #0d6efd !important; }  /* Shipments */
+        .navbar-nav .nav-item:nth-child(3) .nav-link { color: #6c757d !important; }  /* Customers */
+        .navbar-nav .nav-item:nth-child(4) .nav-link { color: #ffc107 !important; }  /* Deliveries */
+        .navbar-nav .nav-item:nth-child(5) .nav-link { color: #198754 !important; }  /* Mail Carriers */
+        .navbar-nav .nav-item:nth-child(6) .nav-link { color: #0dcaf0 !important; }  /* Routes */
 
-        /* Hover effect */
         .navbar-nav .nav-link:hover {
             text-decoration: underline;
             opacity: 0.8;
