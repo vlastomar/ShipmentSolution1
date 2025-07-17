@@ -17,6 +17,7 @@ namespace ShipmentSolution.Services.Core
             this.context = context;
         }
 
+        // Generates options for preferred shipping method dropdown
         private IEnumerable<SelectListItem> GetShippingMethodOptions()
         {
             return new List<SelectListItem>
@@ -185,9 +186,9 @@ namespace ShipmentSolution.Services.Core
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(c =>
-                    c.FirstName.Contains(searchTerm) ||
-                    c.LastName.Contains(searchTerm) ||
-                    c.Email.Contains(searchTerm));
+                    c.FirstName.ToLower().Contains(searchTerm.ToLower()) ||
+                    c.LastName.ToLower().Contains(searchTerm.ToLower()));
+                // Removed: c.Email.Contains(searchTerm)
             }
 
             var totalItems = await query.CountAsync();
