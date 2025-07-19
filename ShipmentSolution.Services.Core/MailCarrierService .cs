@@ -153,8 +153,7 @@ namespace ShipmentSolution.Services.Core
                     searchTerm = searchTerm.ToLower();
                     query = query.Where(mc =>
                         mc.FirstName.ToLower().Contains(searchTerm) ||
-                        mc.LastName.ToLower().Contains(searchTerm) ||
-                        mc.Email.ToLower().Contains(searchTerm));
+                        mc.LastName.ToLower().Contains(searchTerm));
                 }
 
                 if (!string.IsNullOrEmpty(statusFilter))
@@ -191,5 +190,6 @@ namespace ShipmentSolution.Services.Core
                 throw new Exception("Failed to retrieve mail carriers.");
             }
         }
+
     }
 }
