@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.MailCarrierViewModels;
 
@@ -46,7 +47,21 @@ namespace ShipmentSolution.Web.Controllers
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         [HttpGet]
-        public IActionResult Create() => View();
+        public IActionResult Create()
+        {
+            var model = new MailCarrierCreateViewModel
+            {
+                StatusOptions = new List<SelectListItem>
+        {
+            new SelectListItem { Text = "-- Select Status --", Value = "" },
+            new SelectListItem { Text = "Available", Value = "Available" },
+            new SelectListItem { Text = "On Break", Value = "On Break" },
+            new SelectListItem { Text = "On a Delivery", Value = "On a Delivery" }
+        }
+            };
+
+            return View(model);
+        }
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         [HttpPost]

@@ -1,37 +1,46 @@
-﻿@model   ShipmentSolution.Web.ViewModels.MailCarrierViewModels.MailCarrierEditViewModel
-<h2>Create Mail Carrier</h2>
+﻿@model ShipmentSolution.Web.ViewModels.MailCarrierViewModels.MailCarrierEditViewModel
 
-<form asp-action="Create" method="post">
+<h2>Edit Mail Carrier</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="MailCarrierId" />
+
     <div class="form-group">
         <label asp-for="FullName"></label>
         <input asp-for="FullName" class="form-control" />
         <span asp-validation-for="FullName" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="Email"></label>
         <input asp-for="Email" class="form-control" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="PhoneNumber"></label>
         <input asp-for="PhoneNumber" class="form-control" />
         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="Status"></label>
-        <input asp-for="Status" class="form-control" />
+        <select asp-for="Status" asp-items="Model.StatusOptions" class="form-select"></select>
         <span asp-validation-for="Status" class="text-danger"></span>
     </div>
+
     <div class="form-group">
         <label asp-for="CurrentLocation"></label>
         <input asp-for="CurrentLocation" class="form-control" />
         <span asp-validation-for="CurrentLocation" class="text-danger"></span>
     </div>
-   <div class="mt-3">
-    <button type="submit" class="btn btn-warning me-2">Edit</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-warning me-2">Edit</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

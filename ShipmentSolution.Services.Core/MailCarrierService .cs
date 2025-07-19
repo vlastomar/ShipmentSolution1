@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using ShipmentSolution.Data;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.Common;
@@ -51,7 +52,14 @@ namespace ShipmentSolution.Services.Core
                 Email = mc.Email,
                 PhoneNumber = mc.PhoneNumber,
                 Status = mc.Status,
-                CurrentLocation = mc.CurrentLocation
+                CurrentLocation = mc.CurrentLocation,
+                StatusOptions = new List<SelectListItem>
+                {
+                    new SelectListItem { Text = "-- Select Status --", Value = "" },
+                    new SelectListItem { Text = "Available", Value = "Available" },
+                    new SelectListItem { Text = "On Break", Value = "On Break" },
+                    new SelectListItem { Text = "On a Delivery", Value = "On a Delivery" }
+                }
             };
         }
 

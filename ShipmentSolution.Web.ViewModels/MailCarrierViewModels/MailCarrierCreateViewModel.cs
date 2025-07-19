@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShipmentSolution.Web.ViewModels.MailCarrierViewModels
 {
@@ -24,5 +25,6 @@ namespace ShipmentSolution.Web.ViewModels.MailCarrierViewModels
 
         [Display(Name = "Current Location")]
         public string? CurrentLocation { get; set; }
+        public IEnumerable<SelectListItem>? StatusOptions { get; set; }
     }
 }
