@@ -1,4 +1,7 @@
 ﻿@model ShipmentSolution.Web.ViewModels.Common.PaginatedList<ShipmentSolution.Web.ViewModels.CustomerViewModels.CustomerViewModel>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
 
 @{
     ViewData["Title"] = "All Customers";
@@ -6,7 +9,8 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+   <link rel="stylesheet" href="~/css/Customer.css" asp-append-version="true" />
+
 }
 
 <div class="container content-wrapper">
@@ -25,10 +29,10 @@
             <a asp-action="Index" class="btn btn-secondary w-100">Reset</a>
         </div>
         <div class="col-md-4 text-end">
-            @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
-            {
-                <a asp-action="Create" class="btn btn-transparent-green">Create Customer</a>
-            }
+            @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Administrator") || User.IsInRole("RegisteredUser")))
+                {
+                    <a asp-action="Create" class="btn btn-success">Create</a>
+                }
         </div>
     </form>
 
@@ -40,7 +44,8 @@
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Email</th>
-                @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                @if (SignInManager.IsSignedIn(User) && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
+
                 {
                     <th>Actions</th>
                 }
@@ -54,11 +59,13 @@
                     <td>@customer.FirstName</td>
                     <td>@customer.LastName</td>
                     <td>@customer.Email</td>
-                    @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                    @if (SignInManager.IsSignedIn(User) && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
+
                     {
                         <td>
                             <a asp-action="Edit" asp-route-id="@customer.CustomerId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
-                            @if (User.IsInRole("Administrator"))
+                            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
+
                             {
                                 <a asp-action="Delete" asp-route-id="@customer.CustomerId" class="btn btn-transparent-red btn-sm">Delete</a>
                             }

@@ -1,10 +1,12 @@
 ﻿
 
-body.shipment-bg {
-    background-image: url('/images/shipment4.jpg');
+
+body {
+    background-image: url('/Images/shipment4.jpg');
     background-size: cover;
-    background-attachment: fixed;
     background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
 }
 
 .content-wrapper {
