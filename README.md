@@ -3,7 +3,8 @@ SHIPMENT COMPANY
 Application ShipmentSolution created is covering all needs for one Shipment Company including all chains of working process.
 I/ It consists of:
 1/ Database named Shipments which have 5 entities with relationships as showed on the diagram below:
- 
+ <img width="744" height="410" alt="image" src="https://github.com/user-attachments/assets/96736aa4-418b-4e8c-be1f-3f62fb4dada1" />
+
   	2/ WEB application has 6 screens : Main , Shipments, Customers, Deliveries, Mail Carriers, Routes. It can be chosen appropriate screen using Upper menu or Down menu on screen. 
 
 II/ For this Application we have 3 types of Users: Admin, Loged User and Unlogged User.
