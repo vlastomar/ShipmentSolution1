@@ -31,7 +31,7 @@
         <div class="col-md-4 text-end">
             @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Administrator") || User.IsInRole("RegisteredUser")))
                 {
-                    <a asp-action="Create" class="btn btn-success">Create</a>
+                    <a asp-action="Create" class="btn btn-success">Create Customer</a>
                 }
         </div>
     </form>

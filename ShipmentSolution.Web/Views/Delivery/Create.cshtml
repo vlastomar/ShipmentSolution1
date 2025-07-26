@@ -1,4 +1,5 @@
 ﻿@model ShipmentSolution.Web.ViewModels.DeliveryViewModels.DeliveryCreateViewModel
+
 @{
     ViewData["Title"] = "Create Delivery";
 }
@@ -8,19 +9,37 @@
 <form asp-action="Create" method="post">
     <div class="form-group">
         <label asp-for="ShipmentId"></label>
-        <select asp-for="ShipmentId" asp-items="Model.Shipments" class="form-control"></select>
+        <select asp-for="ShipmentId" class="form-control">
+            <option value="">-- Select Shipment --</option>
+            @foreach (var item in Model.Shipments)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
         <span asp-validation-for="ShipmentId" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="MailCarrierId"></label>
-        <select asp-for="MailCarrierId" asp-items="Model.MailCarriers" class="form-control"></select>
+        <select asp-for="MailCarrierId" class="form-control">
+            <option value="">-- Select Mail Carrier --</option>
+            @foreach (var item in Model.MailCarriers)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
         <span asp-validation-for="MailCarrierId" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="RouteId"></label>
-        <select asp-for="RouteId" asp-items="Model.Routes" class="form-control"></select>
+        <select asp-for="RouteId" class="form-control">
+            <option value="">-- Select Route --</option>
+            @foreach (var item in Model.Routes)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
         <span asp-validation-for="RouteId" class="text-danger"></span>
     </div>
 

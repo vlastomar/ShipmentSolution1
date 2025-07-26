@@ -45,10 +45,10 @@ namespace ShipmentSolution.Services.Core
             {
                 var delivery = new Delivery
                 {
-                    ShipmentId = model.ShipmentId,
-                    MailCarrierId = model.MailCarrierId,
-                    RouteId = model.RouteId,
-                    DateDelivered = model.DateDelivered
+                    ShipmentId = model.ShipmentId!.Value,
+                    MailCarrierId = model.MailCarrierId!.Value,
+                    RouteId = model.RouteId!.Value,
+                    DateDelivered = model.DateDelivered!.Value
                 };
 
                 context.Deliveries.Add(delivery);
@@ -192,8 +192,8 @@ namespace ShipmentSolution.Services.Core
             {
                 Shipments = shipments,
                 MailCarriers = mailCarriers,
-                Routes = routes,
-                DateDelivered = DateTime.Today
+                Routes = routes
+                // DateDelivered left null intentionally
             };
         }
 
@@ -266,6 +266,7 @@ namespace ShipmentSolution.Services.Core
                 .Distinct()
                 .ToListAsync();
         }
+
         public async Task<DeliveryDeleteViewModel> GetDeleteViewModelAsync(int id)
         {
             try
@@ -292,10 +293,8 @@ namespace ShipmentSolution.Services.Core
             }
             catch (Exception ex)
             {
-                // Optional: log the exception here if you have a logger injected
                 throw new ApplicationException("An error occurred while fetching the delivery for deletion.", ex);
             }
         }
-
     }
 }
