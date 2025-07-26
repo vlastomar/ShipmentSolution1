@@ -25,7 +25,34 @@ IV/ Shipments :
 Here we have options to search records by customer name or by shipping method. Also it has a possibility to Reset the searching text .
 User can see the table with listing of all Shipments and depending of the role the User can Create (button Create Shipment), Edit (button Edit) and Delete (button Delete) the records.
 
-V/ 
+V/ Customers:
+ <img width="680" height="281" alt="image" src="https://github.com/user-attachments/assets/e691aa00-d573-4ecd-809f-7f60cd239426" />
+
+
+Here we have options to search records by First or Last name of Customer. Also it has a possibility to Reset the searching text.
+User can see the table with listing of all Shipments and depending of the role the User can Create (button Create Shipment), Edit (button Edit) and Delete (button Delete) the records.
+VI/ Deliveries:
+ <img width="688" height="329" alt="image" src="https://github.com/user-attachments/assets/1f9f5540-fc29-4807-b4fe-28452d37bb5a" />
+
+
+Here we have options to search records by Carrier name or filter by Carrier. Also it has a possibility to Reset the searching text.
+User can see the table with listing of all Shipments and depending of the role the User can Create (button Create Shipment), Edit (button Edit) and Delete (button Delete) the records.
+
+VII/ Mail Carriers:
+<img width="694" height="331" alt="image" src="https://github.com/user-attachments/assets/2ce17a01-d7ad-4cad-8fb3-1f7f5d7a332d" />
+
+ 
+Here we have options to search records by Mail Carrier name or filter by Statuses. Also it has a possibility to Reset the searching text.
+User can see the table with listing of all Shipments and depending of the role the User can Create (button Create Shipment), Edit (button Edit) and Delete (button Delete) the records.
+
+VIII/ Routes:
+<img width="731" height="332" alt="image" src="https://github.com/user-attachments/assets/6a847b3e-25ee-4594-a2d8-b3a1133228db" />
+
+ 
+Here we have options to search records Start or End of Routes or filter Priorities. Also it has a possibility to Reset the searching text.
+User can see the table with listing of all Shipments and depending of the role the User can Create (button Create Shipment), Edit (button Edit) and Delete (button Delete) the records.
+
+
 
 
 
