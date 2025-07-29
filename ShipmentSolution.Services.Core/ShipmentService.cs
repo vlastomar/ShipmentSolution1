@@ -5,6 +5,7 @@ using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.ShipmentViewModels;
+using System.Security.Claims;
 using static ShipmentSolution.GCommon.ValidationConstants;
 
 namespace ShipmentSolution.Services.Core
@@ -59,7 +60,7 @@ namespace ShipmentSolution.Services.Core
             }
         }
 
-        public async Task CreateAsync(ShipmentCreateViewModel model)
+        public async Task CreateAsync(ShipmentCreateViewModel model, string userId)
         {
             try
             {
@@ -70,7 +71,8 @@ namespace ShipmentSolution.Services.Core
                     ShippingMethod = model.ShippingMethod,
                     ShippingCost = (float)model.ShippingCost,
                     DeliveryDate = (DateTime)model.DeliveryDate,
-                    CustomerId = model.CustomerId
+                    CustomerId = model.CustomerId,
+                    CreatedByUserId = userId
                 };
 
                 await context.Shipments.AddAsync(shipment);
@@ -93,15 +95,16 @@ namespace ShipmentSolution.Services.Core
             }
         }
 
-        public async Task<ShipmentEditViewModel> GetForEditAsync(int id)
+        public async Task<ShipmentEditViewModel?> GetForEditAsync(int id, string userId, ClaimsPrincipal user)
         {
             try
             {
                 var shipment = await context.Shipments.FindAsync(id);
-
-                if (shipment == null)
-                    throw new ArgumentException("Shipment not found");
-
+                if (shipment == null || shipment.IsDeleted)
+                    return null;
+                // Only allow Admins or the creator of the shipment
+                if (!user.IsInRole("Administrator") && shipment.CreatedByUserId != userId)
+                    return null;
                 return new ShipmentEditViewModel
                 {
                     ShipmentId = shipment.ShipmentId,
@@ -117,15 +120,21 @@ namespace ShipmentSolution.Services.Core
             }
             catch
             {
-                return new ShipmentEditViewModel();
+                return null;
             }
         }
 
-        public async Task EditAsync(ShipmentEditViewModel model)
+        public async Task<bool> EditAsync(ShipmentEditViewModel model, string userId, ClaimsPrincipal user)
         {
             try
             {
                 var shipment = await context.Shipments.FindAsync(model.ShipmentId);
+                if (shipment == null || shipment.IsDeleted)
+                    return false;
+
+                // Allow only Admins or the creator of the shipment to edit
+                if (!user.IsInRole("Administrator") && shipment.CreatedByUserId != userId)
+                    return false;
 
                 shipment.Weight = model.Weight;
                 shipment.Dimensions = model.Dimensions;
@@ -135,14 +144,15 @@ namespace ShipmentSolution.Services.Core
                 shipment.CustomerId = model.CustomerId;
 
                 await context.SaveChangesAsync();
+                return true;
             }
             catch
             {
-                throw;
+                return false;
             }
         }
 
-        public async Task<ShipmentDeleteViewModel> GetForDeleteAsync(int id)
+        public async Task<ShipmentDeleteViewModel?> GetForDeleteAsync(int id)
         {
             try
             {
@@ -151,7 +161,7 @@ namespace ShipmentSolution.Services.Core
                     .FirstOrDefaultAsync(s => s.ShipmentId == id);
 
                 if (shipment == null)
-                    throw new ArgumentException("Shipment not found");
+                    return null;
 
                 return new ShipmentDeleteViewModel
                 {
@@ -164,34 +174,47 @@ namespace ShipmentSolution.Services.Core
             }
             catch
             {
-                return new ShipmentDeleteViewModel();
+                return null;
             }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id, string userId, ClaimsPrincipal user)
         {
             try
             {
                 var shipment = await context.Shipments.FirstOrDefaultAsync(s => s.ShipmentId == id);
-                if (shipment != null)
-                {
-                    shipment.IsDeleted = true;
-                    await context.SaveChangesAsync();
-                }
+
+                if (shipment == null || shipment.IsDeleted)
+                    return false;
+
+                // Only Admin or creator can delete
+                if (!user.IsInRole("Administrator") && shipment.CreatedByUserId != userId)
+                    return false;
+
+                shipment.IsDeleted = true;
+                await context.SaveChangesAsync();
+                return true;
             }
-            catch
+            catch (Exception)
             {
-                throw;
+                // You can optionally log the exception here
+                return false;
             }
         }
 
-        public async Task<PaginatedList<ShipmentViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? shippingMethod)
+
+        public async Task<PaginatedList<ShipmentViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? shippingMethod, string? userId, bool isAdmin)
         {
             try
             {
                 var query = context.Shipments
                     .Include(s => s.Customer)
                     .Where(s => !s.IsDeleted);
+
+                if (!isAdmin && !string.IsNullOrEmpty(userId))
+                {
+                    query = query.Where(s => s.CreatedByUserId == userId);
+                }
 
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
@@ -214,7 +237,8 @@ namespace ShipmentSolution.Services.Core
                         CustomerName = s.Customer.FirstName + " " + s.Customer.LastName,
                         ShippingMethod = s.ShippingMethod,
                         ShippingCost = (decimal)s.ShippingCost,
-                        DeliveryDate = s.DeliveryDate
+                        DeliveryDate = s.DeliveryDate,
+                        CreatedByUserId = s.CreatedByUserId
                     })
                     .Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize)

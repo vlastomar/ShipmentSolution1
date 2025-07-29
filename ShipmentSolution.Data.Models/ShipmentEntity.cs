@@ -1,4 +1,5 @@
 ﻿using ShipmentSolution.Data.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ShipmentSolution.Data.Models
 {
@@ -13,8 +14,9 @@ namespace ShipmentSolution.Data.Models
         public DateTime DeliveryDate { get; set; }
 
 
-        public bool IsDeleted { get; set; } 
-
+        public bool IsDeleted { get; set; }
+        public string? CreatedByUserId { get; set; }
+        public IdentityUser? CreatedByUser { get; set; }
         public Customer Customer { get; set; } = null!;
         public ICollection<Delivery> Deliveries { get; set; } = null!;
     }

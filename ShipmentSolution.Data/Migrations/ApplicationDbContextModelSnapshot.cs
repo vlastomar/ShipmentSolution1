@@ -22,128 +22,6 @@ namespace ShipmentSolution.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("MailCarrier", b =>
-                {
-                    b.Property<int>("MailCarrierId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MailCarrierId"));
-
-                    b.Property<string>("CurrentLocation")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int>("RouteId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("MailCarrierId");
-
-                    b.ToTable("MailCarriers");
-
-                    b.HasData(
-                        new
-                        {
-                            MailCarrierId = 1,
-                            CurrentLocation = "New York City",
-                            Email = "david.wilson@example.com",
-                            FirstName = "David",
-                            IsDeleted = false,
-                            LastName = "Wilson",
-                            PhoneNumber = "1112223333",
-                            RouteId = 1,
-                            StartDate = new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "Available"
-                        },
-                        new
-                        {
-                            MailCarrierId = 2,
-                            CurrentLocation = "Los Angeles",
-                            Email = "sarah.anderson@example.com",
-                            FirstName = "Sarah",
-                            IsDeleted = false,
-                            LastName = "Anderson",
-                            PhoneNumber = "4445556666",
-                            RouteId = 2,
-                            StartDate = new DateTime(2023, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "On Break"
-                        },
-                        new
-                        {
-                            MailCarrierId = 3,
-                            CurrentLocation = "Chicago",
-                            Email = "robert.miller@example.com",
-                            FirstName = "Robert",
-                            IsDeleted = false,
-                            LastName = "Miller",
-                            PhoneNumber = "7778889999",
-                            RouteId = 3,
-                            StartDate = new DateTime(2023, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "On a Delivery"
-                        },
-                        new
-                        {
-                            MailCarrierId = 4,
-                            CurrentLocation = "Houston",
-                            Email = "jennifer.thomas@example.com",
-                            FirstName = "Jennifer",
-                            IsDeleted = false,
-                            LastName = "Thomas",
-                            PhoneNumber = "1231231234",
-                            RouteId = 4,
-                            StartDate = new DateTime(2023, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "Available"
-                        },
-                        new
-                        {
-                            MailCarrierId = 5,
-                            CurrentLocation = "Miami",
-                            Email = "daniel.wilson@example.com",
-                            FirstName = "Daniel",
-                            IsDeleted = false,
-                            LastName = "Wilson",
-                            PhoneNumber = "9998887777",
-                            RouteId = 5,
-                            StartDate = new DateTime(2023, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "On Break"
-                        });
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -359,6 +237,9 @@ namespace ShipmentSolution.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -401,6 +282,8 @@ namespace ShipmentSolution.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("CustomerId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.ToTable("Customers");
 
@@ -603,6 +486,128 @@ namespace ShipmentSolution.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ShipmentSolution.Data.Models.MailCarrier", b =>
+                {
+                    b.Property<int>("MailCarrierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MailCarrierId"));
+
+                    b.Property<string>("CurrentLocation")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("RouteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("MailCarrierId");
+
+                    b.ToTable("MailCarriers");
+
+                    b.HasData(
+                        new
+                        {
+                            MailCarrierId = 1,
+                            CurrentLocation = "New York City",
+                            Email = "david.wilson@example.com",
+                            FirstName = "David",
+                            IsDeleted = false,
+                            LastName = "Wilson",
+                            PhoneNumber = "1112223333",
+                            RouteId = 1,
+                            StartDate = new DateTime(2023, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Available"
+                        },
+                        new
+                        {
+                            MailCarrierId = 2,
+                            CurrentLocation = "Los Angeles",
+                            Email = "sarah.anderson@example.com",
+                            FirstName = "Sarah",
+                            IsDeleted = false,
+                            LastName = "Anderson",
+                            PhoneNumber = "4445556666",
+                            RouteId = 2,
+                            StartDate = new DateTime(2023, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "On Break"
+                        },
+                        new
+                        {
+                            MailCarrierId = 3,
+                            CurrentLocation = "Chicago",
+                            Email = "robert.miller@example.com",
+                            FirstName = "Robert",
+                            IsDeleted = false,
+                            LastName = "Miller",
+                            PhoneNumber = "7778889999",
+                            RouteId = 3,
+                            StartDate = new DateTime(2023, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "On a Delivery"
+                        },
+                        new
+                        {
+                            MailCarrierId = 4,
+                            CurrentLocation = "Houston",
+                            Email = "jennifer.thomas@example.com",
+                            FirstName = "Jennifer",
+                            IsDeleted = false,
+                            LastName = "Thomas",
+                            PhoneNumber = "1231231234",
+                            RouteId = 4,
+                            StartDate = new DateTime(2023, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "Available"
+                        },
+                        new
+                        {
+                            MailCarrierId = 5,
+                            CurrentLocation = "Miami",
+                            Email = "daniel.wilson@example.com",
+                            FirstName = "Daniel",
+                            IsDeleted = false,
+                            LastName = "Wilson",
+                            PhoneNumber = "9998887777",
+                            RouteId = 5,
+                            StartDate = new DateTime(2023, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = "On Break"
+                        });
+                });
+
             modelBuilder.Entity("ShipmentSolution.Data.Models.Route", b =>
                 {
                     b.Property<int>("RouteId")
@@ -763,6 +768,9 @@ namespace ShipmentSolution.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShipmentId"));
 
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
@@ -789,6 +797,8 @@ namespace ShipmentSolution.Data.Migrations
                         .HasColumnType("real");
 
                     b.HasKey("ShipmentId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("CustomerId");
 
@@ -958,9 +968,18 @@ namespace ShipmentSolution.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ShipmentSolution.Data.Models.Customer", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId");
+
+                    b.Navigation("CreatedByUser");
+                });
+
             modelBuilder.Entity("ShipmentSolution.Data.Models.Delivery", b =>
                 {
-                    b.HasOne("MailCarrier", "MailCarrier")
+                    b.HasOne("ShipmentSolution.Data.Models.MailCarrier", "MailCarrier")
                         .WithMany("Deliveries")
                         .HasForeignKey("MailCarrierId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -987,7 +1006,7 @@ namespace ShipmentSolution.Data.Migrations
 
             modelBuilder.Entity("ShipmentSolution.Data.Models.Route", b =>
                 {
-                    b.HasOne("MailCarrier", "MailCarrier")
+                    b.HasOne("ShipmentSolution.Data.Models.MailCarrier", "MailCarrier")
                         .WithMany("Routes")
                         .HasForeignKey("MailCarrierId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -998,25 +1017,31 @@ namespace ShipmentSolution.Data.Migrations
 
             modelBuilder.Entity("ShipmentSolution.Data.Models.ShipmentEntity", b =>
                 {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId");
+
                     b.HasOne("ShipmentSolution.Data.Models.Customer", "Customer")
                         .WithMany("Shipments")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("MailCarrier", b =>
-                {
-                    b.Navigation("Deliveries");
-
-                    b.Navigation("Routes");
                 });
 
             modelBuilder.Entity("ShipmentSolution.Data.Models.Customer", b =>
                 {
                     b.Navigation("Shipments");
+                });
+
+            modelBuilder.Entity("ShipmentSolution.Data.Models.MailCarrier", b =>
+                {
+                    b.Navigation("Deliveries");
+
+                    b.Navigation("Routes");
                 });
 
             modelBuilder.Entity("ShipmentSolution.Data.Models.Route", b =>

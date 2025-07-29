@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,8 @@ namespace ShipmentSolution.Data.Models
         public string PreferredShippingMethod { get; set; } = null!;
         public float ShippingCostThreshold { get; set; }
         public bool IsDeleted { get; set; }
+        public string? CreatedByUserId { get; set; }
+        public IdentityUser? CreatedByUser { get; set; }
 
         public ICollection<ShipmentEntity> Shipments { get; set; } = null!;
     }

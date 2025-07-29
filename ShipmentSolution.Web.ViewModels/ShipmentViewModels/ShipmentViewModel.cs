@@ -8,5 +8,7 @@ namespace ShipmentSolution.Web.ViewModels.ShipmentViewModels
         public string? ShippingMethod { get; set; }
         public decimal ShippingCost { get; set; }
         public DateTime? DeliveryDate { get; set; }
+
+        public string? CreatedByUserId { get; set; }
     }
 }

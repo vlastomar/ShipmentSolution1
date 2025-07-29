@@ -2,6 +2,8 @@
 using ShipmentSolution.Web.ViewModels.ShipmentViewModels;
 using ShipmentSolution.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace ShipmentSolution.Web.Controllers
 {
@@ -9,11 +11,16 @@ namespace ShipmentSolution.Web.Controllers
     {
         private readonly IShipmentService shipmentService;
         private readonly ILogger<ShipmentController> logger;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public ShipmentController(IShipmentService shipmentService, ILogger<ShipmentController> logger)
+        public ShipmentController(
+            IShipmentService shipmentService,
+            ILogger<ShipmentController> logger,
+            UserManager<IdentityUser> userManager)
         {
             this.shipmentService = shipmentService;
             this.logger = logger;
+            this.userManager = userManager;
         }
 
         [HttpGet]
@@ -23,7 +30,13 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
-                var model = await shipmentService.GetPaginatedAsync(page, PageSize, searchTerm, shippingMethod);
+                string? userId = User.Identity?.IsAuthenticated == true
+                    ? userManager.GetUserId(User)
+                    : null;
+
+                bool isAdmin = User.IsInRole("Administrator");
+
+                var model = await shipmentService.GetPaginatedAsync(page, PageSize, searchTerm, shippingMethod, userId, isAdmin);
 
                 ViewBag.CurrentSearch = searchTerm;
                 ViewBag.CurrentShippingMethod = shippingMethod;
@@ -67,7 +80,8 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
-                await shipmentService.CreateAsync(model);
+                string userId = userManager.GetUserId(User);
+                await shipmentService.CreateAsync(model, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -85,9 +99,12 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                var model = await shipmentService.GetForEditAsync(id);
+                string userId = userManager.GetUserId(User);
+                bool isAdmin = User.IsInRole("Administrator");
+
+                var model = await shipmentService.GetForEditAsync(id, userId, User);
                 if (model == null)
-                    return NotFound();
+                    return Unauthorized(); // or NotFound()
 
                 return View(model);
             }
@@ -111,7 +128,13 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
-                await shipmentService.EditAsync(model);
+                string userId = userManager.GetUserId(User);
+                bool isAdmin = User.IsInRole("Administrator");
+
+                bool success = await shipmentService.EditAsync(model, userId, User);
+                if (!success)
+                    return Unauthorized(); // or NotFound()
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -149,7 +172,13 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                await shipmentService.DeleteAsync(id);
+                var userId = userManager.GetUserId(User); // get the current user ID
+
+                var success = await shipmentService.DeleteAsync(id, userId, User);
+
+                if (!success)
+                    return Forbid();
+
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
