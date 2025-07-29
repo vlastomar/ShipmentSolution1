@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.Controllers;
-using ShipmentSolution.Web.ViewModels.CustomerViewModels;
 using ShipmentSolution.Web.ViewModels.Common;
+using ShipmentSolution.Web.ViewModels.CustomerViewModels;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ShipmentSolution.Tests.Controllers
@@ -15,12 +17,19 @@ namespace ShipmentSolution.Tests.Controllers
     {
         private Mock<ICustomerService> _mockService = null!;
         private CustomerController _controller = null!;
+        private Mock<UserManager<IdentityUser>> _userManagerMock;
 
         [SetUp]
         public void Setup()
         {
             _mockService = new Mock<ICustomerService>();
-            _controller = new CustomerController(_mockService.Object);
+
+            var store = new Mock<IUserStore<IdentityUser>>();
+            _userManagerMock = new Mock<UserManager<IdentityUser>>(
+                store.Object, null, null, null, null, null, null, null, null
+            );
+
+            _controller = new CustomerController(_mockService.Object, _userManagerMock.Object);
         }
 
         [Test]
@@ -33,7 +42,9 @@ namespace ShipmentSolution.Tests.Controllers
                 TotalPages = 1
             };
 
-            _mockService.Setup(s => s.GetPaginatedAsync(1, 5, null)).ReturnsAsync(mockResult);
+            _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user-123");
+            _mockService.Setup(s => s.GetPaginatedAsync(1, 5, null, "user-123", false))
+                        .ReturnsAsync(mockResult);
 
             var result = await _controller.Index(null) as ViewResult;
 
@@ -41,11 +52,18 @@ namespace ShipmentSolution.Tests.Controllers
             Assert.That(result!.Model, Is.EqualTo(mockResult));
         }
 
+
         [Test]
         public async Task Index_ReturnsViewWithErrorOnException()
         {
-            _mockService.Setup(s => s.GetPaginatedAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-                        .ThrowsAsync(new Exception("Test Exception"));
+            _mockService.Setup(s => s.GetPaginatedAsync(
+                It.IsAny<int>(),          // pageIndex
+                It.IsAny<int>(),          // pageSize
+                It.IsAny<string?>(),      // searchTerm
+                It.IsAny<string>(),       // userId
+                It.IsAny<bool>()          // isAdmin
+                ))
+                .ThrowsAsync(new Exception("Test Exception"));
 
             var result = await _controller.Index(null) as ViewResult;
 
@@ -88,18 +106,29 @@ namespace ShipmentSolution.Tests.Controllers
                 ShippingCostThreshold = 50
             };
 
+            _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>()))
+                            .Returns("user-123");
+
+            _mockService.Setup(s => s.CreateAsync(model, "user-123"))
+                        .Returns(Task.CompletedTask);
+
             var result = await _controller.Create(model) as RedirectToActionResult;
 
-            _mockService.Verify(s => s.CreateAsync(model), Times.Once);
+            _mockService.Verify(s => s.CreateAsync(model, "user-123"), Times.Once);
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.ActionName, Is.EqualTo("Index"));
         }
+
 
         [Test]
         public async Task Edit_Get_ReturnsViewWithModel()
         {
             var mockModel = new CustomerEditViewModel { CustomerId = 1, FirstName = "Test" };
-            _mockService.Setup(s => s.GetForEditAsync(1)).ReturnsAsync(mockModel);
+
+            _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user-123");
+
+            _mockService.Setup(s => s.GetForEditAsync(1, "user-123", It.IsAny<ClaimsPrincipal>()))
+                        .ReturnsAsync(mockModel);
 
             var result = await _controller.Edit(1) as ViewResult;
 
@@ -107,15 +136,24 @@ namespace ShipmentSolution.Tests.Controllers
             Assert.That(result!.Model, Is.EqualTo(mockModel));
         }
 
+
         [Test]
         public async Task Edit_Post_ValidModel_RedirectsToIndex()
         {
             var model = new CustomerEditViewModel { CustomerId = 1, FirstName = "Edit" };
+
+            _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>()))
+                            .Returns("user-123");
+
+            _mockService.Setup(s => s.EditAsync(model, "user-123", It.IsAny<ClaimsPrincipal>()))
+                        .ReturnsAsync(true);
+
             var result = await _controller.Edit(model) as RedirectToActionResult;
 
-            _mockService.Verify(s => s.EditAsync(model), Times.Once);
+            _mockService.Verify(s => s.EditAsync(model, "user-123", It.IsAny<ClaimsPrincipal>()), Times.Once);
             Assert.That(result!.ActionName, Is.EqualTo("Index"));
         }
+
 
         [Test]
         public async Task Delete_Get_ReturnsViewWithModel()

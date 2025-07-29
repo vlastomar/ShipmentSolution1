@@ -1,12 +1,13 @@
-﻿using NUnit.Framework;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using ShipmentSolution.Data;
 using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core;
 using ShipmentSolution.Web.ViewModels.CustomerViewModels;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ShipmentSolution.Tests.Services
 {
@@ -59,30 +60,34 @@ namespace ShipmentSolution.Tests.Services
         }
 
         [Test]
-        public async Task CreateAsync_AddsCustomerToDatabase()
+        public async Task CreateAsync_AddsCustomer()
         {
             // Arrange
             var model = new CustomerCreateViewModel
             {
-                FirstName = "Charlie",
-                LastName = "Day",
-                Email = "charlie@example.com",
-                PhoneNumber = "111-222-3333",
-                City = "Philly",
-                State = "PA",
-                ZipCode = "19104",
-                PreferredShippingMethod = "Air",
-                ShippingCostThreshold = 100
+                FirstName = "Alice",
+                LastName = "Smith",
+                Email = "alice@example.com",
+                PhoneNumber = "123-456-7890",
+                City = "Springfield",
+                State = "IL",
+                ZipCode = "62704",
+                PreferredShippingMethod = "Express",
+                ShippingCostThreshold = 75
             };
 
+            string userId = "test-user-id";
+
             // Act
-            await _service.CreateAsync(model);
+            await _service.CreateAsync(model, userId);
 
             // Assert
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == "charlie@example.com");
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == "alice@example.com");
             Assert.That(customer, Is.Not.Null);
-            Assert.That(customer!.FirstName, Is.EqualTo("Charlie"));
+            Assert.That(customer!.FirstName, Is.EqualTo("Alice"));
+            Assert.That(customer.CreatedByUserId, Is.EqualTo(userId)); // if tracking user ownership
         }
+
 
         [Test]
         public async Task GetForEditAsync_ReturnsCorrectCustomer()
@@ -105,20 +110,32 @@ namespace ShipmentSolution.Tests.Services
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
+            var userId = "test-user-id";
+            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId),
+        new Claim(ClaimTypes.Role, "Administrator") // Or "RegisteredUser"
+    }));
+
             // Act
-            var result = await _service.GetForEditAsync(customer.CustomerId);
+            var result = await _service.GetForEditAsync(customer.CustomerId, userId, claimsPrincipal);
 
             // Assert
             Assert.That(result.FirstName, Is.EqualTo("Bob"));
         }
 
+
         [Test]
         public void GetForEditAsync_Throws_WhenCustomerNotFound()
         {
+            string fakeUserId = "user-123";
+            var fakePrincipal = new ClaimsPrincipal(); // or a mock
+
             // Act & Assert
             Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                _service.GetForEditAsync(999));
+                _service.GetForEditAsync(999, fakeUserId, fakePrincipal));
         }
+
 
         [Test]
         public async Task EditAsync_UpdatesCustomer()
@@ -155,8 +172,15 @@ namespace ShipmentSolution.Tests.Services
                 ShippingCostThreshold = 75
             };
 
+            string userId = "test-user-id";
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, userId),
+        new Claim(ClaimTypes.Role, "Administrator") // Or "RegisteredUser"
+    }));
+
             // Act
-            await _service.EditAsync(model);
+            await _service.EditAsync(model, userId, principal);
 
             // Assert
             var updated = await _context.Customers.FindAsync(customer.CustomerId);
@@ -165,6 +189,7 @@ namespace ShipmentSolution.Tests.Services
             Assert.That(updated.PhoneNumber, Is.EqualTo("111-111-1111"));
             Assert.That(updated.City, Is.EqualTo("New City"));
         }
+
 
         [TearDown]
         public void TearDown()

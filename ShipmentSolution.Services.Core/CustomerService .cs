@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using ShipmentSolution.Data;
 using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.CustomerViewModels;
+using System.Security.Claims;
 
 namespace ShipmentSolution.Services.Core
 {
@@ -17,7 +18,6 @@ namespace ShipmentSolution.Services.Core
             this.context = context;
         }
 
-        // Generates options for preferred shipping method dropdown
         private IEnumerable<SelectListItem> GetShippingMethodOptions()
         {
             return new List<SelectListItem>
@@ -43,39 +43,34 @@ namespace ShipmentSolution.Services.Core
                 .ToListAsync();
         }
 
-        public async Task CreateAsync(CustomerCreateViewModel model)
+        public async Task CreateAsync(CustomerCreateViewModel model, string userId)
         {
-            try
+            var customer = new Customer
             {
-                var customer = new Customer
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    City = model.City,
-                    State = model.State,
-                    ZipCode = model.ZipCode,
-                    PreferredShippingMethod = model.PreferredShippingMethod,
-                    ShippingCostThreshold = model.ShippingCostThreshold
-                };
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                City = model.City,
+                State = model.State,
+                ZipCode = model.ZipCode,
+                PreferredShippingMethod = model.PreferredShippingMethod,
+                ShippingCostThreshold = model.ShippingCostThreshold,
+                CreatedByUserId = userId
+            };
 
-                context.Customers.Add(customer);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("An error occurred while creating the customer.", ex);
-            }
+            context.Customers.Add(customer);
+            await context.SaveChangesAsync();
         }
 
-        public async Task<CustomerEditViewModel> GetForEditAsync(int id)
+        public async Task<CustomerEditViewModel> GetForEditAsync(int id, string userId, ClaimsPrincipal user)
         {
             var customer = await context.Customers.FindAsync(id);
             if (customer == null || customer.IsDeleted)
-            {
                 throw new KeyNotFoundException("Customer not found.");
-            }
+
+            if (!user.IsInRole("Administrator") && customer.CreatedByUserId != userId)
+                return null;
 
             return new CustomerEditViewModel
             {
@@ -93,51 +88,40 @@ namespace ShipmentSolution.Services.Core
             };
         }
 
-        public async Task EditAsync(CustomerEditViewModel model)
+        public async Task<bool> EditAsync(CustomerEditViewModel model, string userId, ClaimsPrincipal user)
         {
-            try
-            {
-                var customer = await context.Customers.FindAsync(model.CustomerId);
-                if (customer == null || customer.IsDeleted)
-                {
-                    throw new KeyNotFoundException("Customer not found.");
-                }
+            var customer = await context.Customers.FindAsync(model.CustomerId);
 
-                customer.FirstName = model.FirstName;
-                customer.LastName = model.LastName;
-                customer.Email = model.Email;
-                customer.PhoneNumber = model.PhoneNumber;
-                customer.City = model.City;
-                customer.State = model.State;
-                customer.ZipCode = model.ZipCode;
-                customer.PreferredShippingMethod = model.PreferredShippingMethod;
-                customer.ShippingCostThreshold = model.ShippingCostThreshold;
+            if (customer == null || customer.IsDeleted)
+                return false;
 
-                await context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("An error occurred while editing the customer.", ex);
-            }
+            // Only admin or the owner can edit
+            if (!user.IsInRole("Administrator") && customer.CreatedByUserId != userId)
+                return false;
+
+            customer.FirstName = model.FirstName;
+            customer.LastName = model.LastName;
+            customer.Email = model.Email;
+            customer.PhoneNumber = model.PhoneNumber;
+            customer.City = model.City;
+            customer.State = model.State;
+            customer.ZipCode = model.ZipCode;
+            customer.PreferredShippingMethod = model.PreferredShippingMethod;
+            customer.ShippingCostThreshold = model.ShippingCostThreshold;
+
+            await context.SaveChangesAsync();
+            return true;
         }
+
 
         public async Task DeleteAsync(int id)
         {
-            try
-            {
-                var customer = await context.Customers.FindAsync(id);
-                if (customer == null || customer.IsDeleted)
-                {
-                    throw new KeyNotFoundException("Customer not found.");
-                }
+            var customer = await context.Customers.FindAsync(id);
+            if (customer == null || customer.IsDeleted)
+                throw new KeyNotFoundException("Customer not found.");
 
-                customer.IsDeleted = true;
-                await context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("An error occurred while deleting the customer.", ex);
-            }
+            customer.IsDeleted = true;
+            await context.SaveChangesAsync();
         }
 
         public async Task<CustomerViewModel> GetByIdAsync(int id)
@@ -146,9 +130,7 @@ namespace ShipmentSolution.Services.Core
                 .FirstOrDefaultAsync(c => c.CustomerId == id && !c.IsDeleted);
 
             if (entity == null)
-            {
                 throw new KeyNotFoundException("Customer not found.");
-            }
 
             return new CustomerViewModel
             {
@@ -161,34 +143,26 @@ namespace ShipmentSolution.Services.Core
 
         public async Task SoftDeleteAsync(int id)
         {
-            try
-            {
-                var customer = await context.Customers.FindAsync(id);
-                if (customer == null || customer.IsDeleted)
-                {
-                    throw new KeyNotFoundException("Customer not found.");
-                }
+            var customer = await context.Customers.FindAsync(id);
+            if (customer == null || customer.IsDeleted)
+                throw new KeyNotFoundException("Customer not found.");
 
-                customer.IsDeleted = true;
-                await context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("An error occurred while soft deleting the customer.", ex);
-            }
+            customer.IsDeleted = true;
+            await context.SaveChangesAsync();
         }
 
-        public async Task<PaginatedList<CustomerViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm)
+        public async Task<PaginatedList<CustomerViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string userId, bool isAdmin)
         {
-            var query = context.Customers
-                .Where(c => !c.IsDeleted);
+            var query = context.Customers.Where(c => !c.IsDeleted);
+
+            if (!isAdmin)
+                query = query.Where(c => c.CreatedByUserId == userId);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(c =>
                     c.FirstName.ToLower().Contains(searchTerm.ToLower()) ||
                     c.LastName.ToLower().Contains(searchTerm.ToLower()));
-                // Removed: c.Email.Contains(searchTerm)
             }
 
             var totalItems = await query.CountAsync();
