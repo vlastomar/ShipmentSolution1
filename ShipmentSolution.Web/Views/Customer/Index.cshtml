@@ -10,7 +10,6 @@
 
 @section Styles {
    <link rel="stylesheet" href="~/css/Customer.css" asp-append-version="true" />
-
 }
 
 <div class="container content-wrapper">
@@ -30,103 +29,118 @@
         </div>
         <div class="col-md-4 text-end">
             @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Administrator") || User.IsInRole("RegisteredUser")))
-                {
-                    <a asp-action="Create" class="btn btn-success">Create Customer</a>
-                }
+            {
+                <a asp-action="Create" class="btn btn-success">Create Customer</a>
+            }
         </div>
     </form>
 
+    <!-- Warning for Unlogged Users -->
+    @if (!SignInManager.IsSignedIn(User) && !Model.Items.Any())
+    {
+        <div class="alert alert-warning text-center">
+            You are not logged in, so no customers are shown.<br />
+            Please <a asp-area="Identity" asp-page="/Account/Login">log in</a> to view your associated customers.
+        </div>
+    }
+
     <!-- Customer Table -->
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                @if (SignInManager.IsSignedIn(User) && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
-
-                {
-                    <th>Actions</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var customer in Model.Items)
-            {
+    @if (Model.Items.Any())
+    {
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
                 <tr>
-                    <td>@customer.CustomerId</td>
-                    <td>@customer.FirstName</td>
-                    <td>@customer.LastName</td>
-                    <td>@customer.Email</td>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
                     @if (SignInManager.IsSignedIn(User) && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
-
                     {
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@customer.CustomerId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
-                            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrator"))
-
-                            {
-                                <a asp-action="Delete" asp-route-id="@customer.CustomerId" class="btn btn-transparent-red btn-sm">Delete</a>
-                            }
-                        </td>
+                        <th>Actions</th>
                     }
                 </tr>
-            }
-        </tbody>
-    </table>
-
-    <!-- Pagination Controls -->
-    @if (Model.TotalPages > 1)
-    {
-        <nav aria-label="Customer pagination">
-            <ul class="pagination justify-content-center">
-                @if (Model.HasPreviousPage)
+            </thead>
+            <tbody>
+                @foreach (var customer in Model.Items)
                 {
-                    <li class="page-item">
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-page="@(Model.PageIndex - 1)"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch">Previous</a>
-                    </li>
+                    <tr>
+                        <td>@customer.CustomerId</td>
+                        <td>@customer.FirstName</td>
+                        <td>@customer.LastName</td>
+                        <td>@customer.Email</td>
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
+                        {
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@customer.CustomerId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
+                                @if (User.IsInRole("Administrator"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@customer.CustomerId" class="btn btn-transparent-red btn-sm">Delete</a>
+                                }
+                            </td>
+                        }
+                    </tr>
                 }
-                else
-                {
-                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
-                }
+            </tbody>
+        </table>
 
-                @for (int i = 1; i <= Model.TotalPages; i++)
-                {
-                    if (i == Model.PageIndex)
-                    {
-                        <li class="page-item active"><span class="page-link">@i</span></li>
-                    }
-                    else
+        <!-- Pagination Controls -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Customer pagination">
+                <ul class="pagination justify-content-center">
+                    @if (Model.HasPreviousPage)
                     {
                         <li class="page-item">
                             <a class="page-link"
                                asp-action="Index"
-                               asp-route-page="@i"
-                               asp-route-searchTerm="@ViewBag.CurrentSearch">@i</a>
+                               asp-route-page="@(Model.PageIndex - 1)"
+                               asp-route-searchTerm="@ViewBag.CurrentSearch">Previous</a>
                         </li>
                     }
-                }
+                    else
+                    {
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    }
 
-                @if (Model.HasNextPage)
-                {
-                    <li class="page-item">
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-page="@(Model.PageIndex + 1)"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch">Next</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="page-item disabled"><span class="page-link">Next</span></li>
-                }
-            </ul>
-        </nav>
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == Model.PageIndex)
+                        {
+                            <li class="page-item active"><span class="page-link">@i</span></li>
+                        }
+                        else
+                        {
+                            <li class="page-item">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@i"
+                                   asp-route-searchTerm="@ViewBag.CurrentSearch">@i</a>
+                            </li>
+                        }
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.PageIndex + 1)"
+                               asp-route-searchTerm="@ViewBag.CurrentSearch">Next</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+    else if (SignInManager.IsSignedIn(User))  // Authenticated but no records
+    {
+        <div class="alert alert-info text-center">
+            No customers found.
+        </div>
     }
 
     <!-- Back Button -->

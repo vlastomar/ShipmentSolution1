@@ -17,7 +17,7 @@ namespace ShipmentSolution.Tests.Controllers
     {
         private Mock<ICustomerService> _mockService = null!;
         private CustomerController _controller = null!;
-        private Mock<UserManager<IdentityUser>> _userManagerMock;
+        private Mock<UserManager<IdentityUser>> _userManagerMock = null!;
 
         [SetUp]
         public void Setup()
@@ -43,7 +43,7 @@ namespace ShipmentSolution.Tests.Controllers
             };
 
             _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user-123");
-            _mockService.Setup(s => s.GetPaginatedAsync(1, 5, null, "user-123", false))
+            _mockService.Setup(s => s.GetPaginatedAsync(1, 5, null, "user-123", false, true))
                         .ReturnsAsync(mockResult);
 
             var result = await _controller.Index(null) as ViewResult;
@@ -52,17 +52,16 @@ namespace ShipmentSolution.Tests.Controllers
             Assert.That(result!.Model, Is.EqualTo(mockResult));
         }
 
-
         [Test]
         public async Task Index_ReturnsViewWithErrorOnException()
         {
             _mockService.Setup(s => s.GetPaginatedAsync(
-                It.IsAny<int>(),          // pageIndex
-                It.IsAny<int>(),          // pageSize
-                It.IsAny<string?>(),      // searchTerm
-                It.IsAny<string>(),       // userId
-                It.IsAny<bool>()          // isAdmin
-                ))
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string?>(),
+                It.IsAny<string>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>()))
                 .ThrowsAsync(new Exception("Test Exception"));
 
             var result = await _controller.Index(null) as ViewResult;
@@ -119,7 +118,6 @@ namespace ShipmentSolution.Tests.Controllers
             Assert.That(result!.ActionName, Is.EqualTo("Index"));
         }
 
-
         [Test]
         public async Task Edit_Get_ReturnsViewWithModel()
         {
@@ -135,7 +133,6 @@ namespace ShipmentSolution.Tests.Controllers
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.Model, Is.EqualTo(mockModel));
         }
-
 
         [Test]
         public async Task Edit_Post_ValidModel_RedirectsToIndex()
@@ -153,7 +150,6 @@ namespace ShipmentSolution.Tests.Controllers
             _mockService.Verify(s => s.EditAsync(model, "user-123", It.IsAny<ClaimsPrincipal>()), Times.Once);
             Assert.That(result!.ActionName, Is.EqualTo("Index"));
         }
-
 
         [Test]
         public async Task Delete_Get_ReturnsViewWithModel()

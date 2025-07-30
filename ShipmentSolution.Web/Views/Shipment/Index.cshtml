@@ -42,101 +42,117 @@
         </div>
     </form>
 
-    <!-- Shipment Table -->
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Customer</th>
-                <th>Shipping Method</th>
-                <th>Shipping Cost</th>
-                <th>Delivery Date</th>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <th>Actions</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var shipment in Model.Items)
-            {
+    @if (!User.Identity.IsAuthenticated && !Model.Items.Any())
+    {
+        <div class="alert alert-warning text-center">
+            You are not logged in, so only your associated shipments are shown (if any).<br />
+            Please <a asp-area="Identity" asp-page="/Account/Login">log in</a> to manage your shipments.
+        </div>
+    }
+    else if (Model.Items.Any())
+    {
+        <!-- Shipment Table -->
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
                 <tr>
-                    <td>@shipment.CustomerName</td>
-                    <td>@shipment.ShippingMethod</td>
-                    <td>@shipment.ShippingCost.ToString("C")</td>
-                    <td>@(shipment.DeliveryDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                    <th>Customer</th>
+                    <th>Shipping Method</th>
+                    <th>Shipping Cost</th>
+                    <th>Delivery Date</th>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <td>
-                            @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
-                            {
-                                <a asp-action="Edit" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-transparent-yellow me-2">Edit</a>
-                            }
-
-                            @if (User.IsInRole("Administrator"))
-                            {
-                                <a asp-action="Delete" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-transparent-red">Delete</a>
-                            }
-                        </td>
+                        <th>Actions</th>
                     }
                 </tr>
-            }
-        </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <nav aria-label="Shipment pagination">
-        <ul class="pagination justify-content-center">
-            @if (Model.HasPreviousPage)
-            {
-                <li class="page-item">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(Model.PageIndex - 1)"
-                       asp-route-searchTerm="@ViewBag.CurrentSearch"
-                       asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Previous</a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled"><span class="page-link">Previous</span></li>
-            }
-
-            @for (int i = 1; i <= Model.TotalPages; i++)
-            {
-                if (i == Model.PageIndex)
+            </thead>
+            <tbody>
+                @foreach (var shipment in Model.Items)
                 {
-                    <li class="page-item active"><span class="page-link">@i</span></li>
+                    <tr>
+                        <td>@shipment.CustomerName</td>
+                        <td>@shipment.ShippingMethod</td>
+                        <td>@shipment.ShippingCost.ToString("C")</td>
+                        <td>@(shipment.DeliveryDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <td>
+                                @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-transparent-yellow me-2">Edit</a>
+                                }
+
+                                @if (User.IsInRole("Administrator"))
+                                {
+                                    <a asp-action="Delete" asp-route-id="@shipment.ShipmentId" class="btn btn-sm btn-transparent-red">Delete</a>
+                                }
+                            </td>
+                        }
+                    </tr>
                 }
-                else
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <nav aria-label="Shipment pagination">
+            <ul class="pagination justify-content-center">
+                @if (Model.HasPreviousPage)
                 {
                     <li class="page-item">
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-page="@i"
+                           asp-route-page="@(Model.PageIndex - 1)"
                            asp-route-searchTerm="@ViewBag.CurrentSearch"
-                           asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">@i</a>
+                           asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Previous</a>
                     </li>
                 }
-            }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                }
 
-            @if (Model.HasNextPage)
-            {
-                <li class="page-item">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(Model.PageIndex + 1)"
-                       asp-route-searchTerm="@ViewBag.CurrentSearch"
-                       asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Next</a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled"><span class="page-link">Next</span></li>
-            }
-        </ul>
-    </nav>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == Model.PageIndex)
+                    {
+                        <li class="page-item active"><span class="page-link">@i</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-searchTerm="@ViewBag.CurrentSearch"
+                               asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">@i</a>
+                        </li>
+                    }
+                }
 
-    <!--  Back Button -->
+                @if (Model.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageIndex + 1)"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch"
+                           asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Next</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                }
+            </ul>
+        </nav>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            No shipments found.
+        </div>
+    }
+
+    <!-- Back Button -->
     <div class="text-center mt-3">
         <a asp-controller="Home" asp-action="Index" class="btn btn-transparent-blue">Back</a>
     </div>

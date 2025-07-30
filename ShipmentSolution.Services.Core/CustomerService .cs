@@ -63,11 +63,11 @@ namespace ShipmentSolution.Services.Core
             await context.SaveChangesAsync();
         }
 
-        public async Task<CustomerEditViewModel> GetForEditAsync(int id, string userId, ClaimsPrincipal user)
+        public async Task<CustomerEditViewModel?> GetForEditAsync(int id, string userId, ClaimsPrincipal user)
         {
             var customer = await context.Customers.FindAsync(id);
             if (customer == null || customer.IsDeleted)
-                throw new KeyNotFoundException("Customer not found.");
+                return null; // Already nullable
 
             if (!user.IsInRole("Administrator") && customer.CreatedByUserId != userId)
                 return null;
@@ -88,6 +88,7 @@ namespace ShipmentSolution.Services.Core
             };
         }
 
+
         public async Task<bool> EditAsync(CustomerEditViewModel model, string userId, ClaimsPrincipal user)
         {
             var customer = await context.Customers.FindAsync(model.CustomerId);
@@ -95,7 +96,6 @@ namespace ShipmentSolution.Services.Core
             if (customer == null || customer.IsDeleted)
                 return false;
 
-            // Only admin or the owner can edit
             if (!user.IsInRole("Administrator") && customer.CreatedByUserId != userId)
                 return false;
 
@@ -112,7 +112,6 @@ namespace ShipmentSolution.Services.Core
             await context.SaveChangesAsync();
             return true;
         }
-
 
         public async Task DeleteAsync(int id)
         {
@@ -151,12 +150,20 @@ namespace ShipmentSolution.Services.Core
             await context.SaveChangesAsync();
         }
 
-        public async Task<PaginatedList<CustomerViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string userId, bool isAdmin)
+        public async Task<PaginatedList<CustomerViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? userId, bool isAdmin, bool isLoggedIn)
         {
             var query = context.Customers.Where(c => !c.IsDeleted);
 
-            if (!isAdmin)
+            if (!isLoggedIn)
+            {
+                // Unlogged users see nothing
+                query = query.Where(c => false);
+            }
+            else if (!isAdmin)
+            {
+                // Registered users see only their records
                 query = query.Where(c => c.CreatedByUserId == userId);
+            }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {

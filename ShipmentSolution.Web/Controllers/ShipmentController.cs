@@ -35,12 +35,15 @@ namespace ShipmentSolution.Web.Controllers
                     : null;
 
                 bool isAdmin = User.IsInRole("Administrator");
+                bool isLoggedIn = User.Identity?.IsAuthenticated == true;
 
                 var model = await shipmentService.GetPaginatedAsync(page, PageSize, searchTerm, shippingMethod, userId, isAdmin);
 
                 ViewBag.CurrentSearch = searchTerm;
                 ViewBag.CurrentShippingMethod = shippingMethod;
                 ViewBag.ShippingMethods = new List<string> { "Express", "Ground" };
+                ViewBag.IsAdmin = isAdmin;
+                ViewBag.IsLoggedIn = isLoggedIn;
 
                 return View(model);
             }
@@ -100,11 +103,9 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 string userId = userManager.GetUserId(User);
-                bool isAdmin = User.IsInRole("Administrator");
-
                 var model = await shipmentService.GetForEditAsync(id, userId, User);
                 if (model == null)
-                    return Unauthorized(); // or NotFound()
+                    return Unauthorized();
 
                 return View(model);
             }
@@ -129,11 +130,9 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 string userId = userManager.GetUserId(User);
-                bool isAdmin = User.IsInRole("Administrator");
-
                 bool success = await shipmentService.EditAsync(model, userId, User);
                 if (!success)
-                    return Unauthorized(); // or NotFound()
+                    return Unauthorized();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -172,8 +171,7 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                var userId = userManager.GetUserId(User); // get the current user ID
-
+                var userId = userManager.GetUserId(User);
                 var success = await shipmentService.DeleteAsync(id, userId, User);
 
                 if (!success)

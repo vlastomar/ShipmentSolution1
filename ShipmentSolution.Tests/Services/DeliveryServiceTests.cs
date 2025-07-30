@@ -1,11 +1,12 @@
-﻿using NUnit.Framework;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
 using ShipmentSolution.Data;
 using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core;
 using ShipmentSolution.Web.ViewModels.DeliveryViewModels;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ShipmentSolution.Tests.Services
@@ -90,11 +91,14 @@ namespace ShipmentSolution.Tests.Services
         public async Task CreateAsync_AddsDelivery()
         {
             // Arrange
+            var testUserId = "test-user-id";
+
             var shipment = new ShipmentEntity
             {
                 ShippingMethod = "Standard",
                 Dimensions = "10x20x30",
                 Weight = 5.5f,
+                CreatedByUserId = testUserId,
                 IsDeleted = false
             };
 
@@ -128,11 +132,12 @@ namespace ShipmentSolution.Tests.Services
             };
 
             // Act
-            await _service.CreateAsync(model);
+            await _service.CreateAsync(model, testUserId);
 
             // Assert
             var delivery = await _context.Deliveries
                 .FirstOrDefaultAsync(d => d.DateDelivered == model.DateDelivered);
+
             Assert.That(delivery, Is.Not.Null);
             Assert.That(delivery!.DateDelivered, Is.EqualTo(model.DateDelivered));
         }
@@ -141,11 +146,14 @@ namespace ShipmentSolution.Tests.Services
         public async Task GetForEditAsync_ReturnsCorrectViewModel()
         {
             // Arrange
+            var testUserId = "test-user-id";
+
             var shipment = new ShipmentEntity
             {
                 ShippingMethod = "Air",
                 Dimensions = "50x50x20",
                 Weight = 15.0f,
+                CreatedByUserId = testUserId,
                 IsDeleted = false
             };
 
@@ -178,24 +186,46 @@ namespace ShipmentSolution.Tests.Services
             _context.AddRange(shipment, carrier, route, delivery);
             await _context.SaveChangesAsync();
 
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, testUserId),
+        new Claim(ClaimTypes.Role, "RegisteredUser")
+    };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var userPrincipal = new ClaimsPrincipal(identity);
+
             // Act
-            var result = await _service.GetForEditAsync(delivery.DeliveryId);
+            var result = await _service.GetForEditAsync(delivery.DeliveryId, testUserId, userPrincipal);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.DateDelivered, Is.EqualTo(delivery.DateDelivered));
+            Assert.That(result!.DateDelivered, Is.EqualTo(delivery.DateDelivered));
             Assert.That(result.Shipments.Any(), Is.True);
             Assert.That(result.MailCarriers.Any(), Is.True);
             Assert.That(result.Routes.Any(), Is.True);
         }
 
+
         [Test]
-        public void GetForEditAsync_Throws_WhenDeliveryNotFound()
+        public async Task GetForEditAsync_Throws_WhenDeliveryNotFound()
         {
+            // Arrange
+            var testUserId = "test-user-id";
+            var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, testUserId),
+                    new Claim(ClaimTypes.Role, "RegisteredUser")
+                };
+            var identity = new ClaimsIdentity(claims, "TestAuth");
+            var userPrincipal = new ClaimsPrincipal(identity);
+
             // Act & Assert
-            var ex = Assert.ThrowsAsync<Exception>(() => _service.GetForEditAsync(999));
+            var ex = Assert.ThrowsAsync<Exception>(() =>
+             _service.GetForEditAsync(999, testUserId, userPrincipal));
+
             Assert.That(ex!.Message, Is.EqualTo("Delivery not found."));
         }
+
 
         [TearDown]
         public void TearDown()

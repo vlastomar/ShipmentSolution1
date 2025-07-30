@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -18,6 +19,8 @@ namespace ShipmentSolution.Data.Models
         public ShipmentEntity Shipment { get; set; } = null!;
         public MailCarrier MailCarrier { get; set; } = null!;
         public Route Route { get; set; } = null!;
+        public string? CreatedByUserId { get; set; }
+        public IdentityUser? CreatedByUser { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

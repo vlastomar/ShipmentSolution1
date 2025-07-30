@@ -24,9 +24,12 @@ namespace ShipmentSolution.Web.Controllers
             const int PageSize = 5;
             var userId = userManager.GetUserId(User);
             var isAdmin = User.IsInRole("Administrator");
+            var isLoggedIn = User.Identity?.IsAuthenticated ?? false;
 
-            var model = await customerService.GetPaginatedAsync(page, PageSize, searchTerm, userId, isAdmin);
+            var model = await customerService.GetPaginatedAsync(page, PageSize, searchTerm, userId, isAdmin, isLoggedIn);
             ViewBag.CurrentSearch = searchTerm;
+            ViewBag.IsLoggedIn = isLoggedIn;
+
             return View(model);
         }
 
@@ -60,8 +63,6 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var userId = userManager.GetUserId(User);
-            var isAdmin = User.IsInRole("Administrator");
-
             var model = await customerService.GetForEditAsync(id, userId, User);
             if (model == null) return Unauthorized();
 
