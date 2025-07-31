@@ -12,8 +12,8 @@ using ShipmentSolution.Data;
 namespace ShipmentSolution.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250730151202_AddDeliveryCreatedByUserId")]
-    partial class AddDeliveryCreatedByUserId
+    [Migration("20250731171444_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -502,6 +502,9 @@ namespace ShipmentSolution.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MailCarrierId"));
 
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("CurrentLocation")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -545,6 +548,8 @@ namespace ShipmentSolution.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("MailCarrierId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.ToTable("MailCarriers");
 
@@ -1016,6 +1021,16 @@ namespace ShipmentSolution.Data.Migrations
                     b.Navigation("Route");
 
                     b.Navigation("Shipment");
+                });
+
+            modelBuilder.Entity("ShipmentSolution.Data.Models.MailCarrier", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("ShipmentSolution.Data.Models.Route", b =>

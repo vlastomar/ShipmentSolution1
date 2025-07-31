@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.MailCarrierViewModels;
+using System.Security.Claims;
 
 namespace ShipmentSolution.Web.Controllers
 {
@@ -23,7 +24,14 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
-                var result = await mailCarrierService.GetPaginatedAsync(page, PageSize, searchTerm, statusFilter);
+                string? userId = User.Identity?.IsAuthenticated == true
+                    ? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    : null;
+
+                bool isAdmin = User.IsInRole("Administrator");
+
+                var result = await mailCarrierService.GetPaginatedAsync(
+                    page, PageSize, searchTerm, statusFilter, userId, isAdmin);
 
                 ViewBag.CurrentSearch = searchTerm;
                 ViewBag.CurrentStatus = statusFilter;
@@ -35,6 +43,7 @@ namespace ShipmentSolution.Web.Controllers
                     .ToList();
 
                 ViewBag.StatusOptions = statusOptions;
+                ViewBag.ShowWarning = string.IsNullOrEmpty(userId) && !isAdmin;
 
                 return View(result);
             }
@@ -52,12 +61,12 @@ namespace ShipmentSolution.Web.Controllers
             var model = new MailCarrierCreateViewModel
             {
                 StatusOptions = new List<SelectListItem>
-        {
-            new SelectListItem { Text = "-- Select Status --", Value = "" },
-            new SelectListItem { Text = "Available", Value = "Available" },
-            new SelectListItem { Text = "On Break", Value = "On Break" },
-            new SelectListItem { Text = "On a Delivery", Value = "On a Delivery" }
-        }
+                {
+                    new SelectListItem { Text = "-- Select Status --", Value = "" },
+                    new SelectListItem { Text = "Available", Value = "Available" },
+                    new SelectListItem { Text = "On Break", Value = "On Break" },
+                    new SelectListItem { Text = "On a Delivery", Value = "On a Delivery" }
+                }
             };
 
             return View(model);
@@ -68,17 +77,23 @@ namespace ShipmentSolution.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(MailCarrierCreateViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                model.StatusOptions = GetStatusOptions();
+                return View(model);
+            }
 
             try
             {
-                await mailCarrierService.CreateAsync(model);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                await mailCarrierService.CreateAsync(model, userId); // 🔁 Pass userId to service
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error creating MailCarrier.");
                 ModelState.AddModelError("", "An error occurred while creating the mail carrier.");
+                model.StatusOptions = GetStatusOptions();
                 return View(model);
             }
         }
@@ -106,7 +121,11 @@ namespace ShipmentSolution.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(MailCarrierEditViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                model.StatusOptions = GetStatusOptions();
+                return View(model);
+            }
 
             try
             {
@@ -117,6 +136,7 @@ namespace ShipmentSolution.Web.Controllers
             {
                 logger.LogError(ex, "Error editing MailCarrier.");
                 ModelState.AddModelError("", "An error occurred while editing the mail carrier.");
+                model.StatusOptions = GetStatusOptions();
                 return View(model);
             }
         }
@@ -154,6 +174,18 @@ namespace ShipmentSolution.Web.Controllers
                 logger.LogError(ex, "Error deleting MailCarrier.");
                 return RedirectToAction("Error500", "Home");
             }
+        }
+
+        // Helper to reuse dropdown list
+        private List<SelectListItem> GetStatusOptions()
+        {
+            return new List<SelectListItem>
+            {
+                new SelectListItem { Text = "-- Select Status --", Value = "" },
+                new SelectListItem { Text = "Available", Value = "Available" },
+                new SelectListItem { Text = "On Break", Value = "On Break" },
+                new SelectListItem { Text = "On a Delivery", Value = "On a Delivery" }
+            };
         }
     }
 }

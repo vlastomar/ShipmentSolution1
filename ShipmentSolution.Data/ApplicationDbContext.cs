@@ -41,11 +41,14 @@ namespace ShipmentSolution.Data
                 .HasQueryFilter(d => !d.Shipment.IsDeleted);
 
             // Apply Fluent API configurations
-            modelBuilder.ApplyConfiguration(new CustomerConfiguration());
-            modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
             modelBuilder.ApplyConfiguration(new MailCarrierConfiguration());
             modelBuilder.ApplyConfiguration(new RouteConfiguration());
             modelBuilder.ApplyConfiguration(new DeliveryConfiguration());
+            modelBuilder.ApplyConfiguration(new CustomerConfiguration());
+            modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
+            
+            
+            
         }
     }
 }

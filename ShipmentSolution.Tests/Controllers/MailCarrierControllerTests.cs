@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -8,6 +10,7 @@ using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.MailCarrierViewModels;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ShipmentSolution.Tests.Controllers
@@ -19,36 +22,73 @@ namespace ShipmentSolution.Tests.Controllers
         private Mock<ILogger<MailCarrierController>> _loggerMock;
 //#pragma warning restore NUnit1032
         private MailCarrierController _controller;
+        private Mock<UserManager<IdentityUser>> _userManagerMock;
 
         [SetUp]
         public void SetUp()
         {
             _mailCarrierServiceMock = new Mock<IMailCarrierService>();
             _loggerMock = new Mock<ILogger<MailCarrierController>>();
+
             _controller = new MailCarrierController(_mailCarrierServiceMock.Object, _loggerMock.Object);
+
+            // Simulate logged-in RegisteredUser
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, "user-123"),
+        new Claim(ClaimTypes.Role, "RegisteredUser")
+    }, "mock"));
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = user
+                }
+            };
         }
+
 
         [Test]
         public async Task Index_ReturnsViewResult_WithMailCarriers()
         {
+            // Arrange
             var mailCarriers = new List<MailCarrierViewModel>
             {
                 new MailCarrierViewModel { MailCarrierId = 1, FullName = "John", Status = "Active" },
                 new MailCarrierViewModel { MailCarrierId = 2, FullName = "Jane", Status = "Inactive" }
             };
 
-            _mailCarrierServiceMock.Setup(s => s.GetPaginatedAsync(1, 5, null, null))
-                .ReturnsAsync(new PaginatedList<MailCarrierViewModel> { Items = mailCarriers });
+            var paginatedResult = new PaginatedList<MailCarrierViewModel>
+            {
+                Items = mailCarriers,
+                PageIndex = 1,
+                TotalPages = 1
+            };
+
+            string userId = "user-123";
+            bool isAdmin = false;
+
+            _mailCarrierServiceMock.Setup(s =>
+                s.GetPaginatedAsync(1, 5, null, null, userId, isAdmin))
+                .ReturnsAsync(paginatedResult);
 
             _mailCarrierServiceMock.Setup(s => s.GetAllAsync())
                 .ReturnsAsync(mailCarriers);
 
+            // Mock User Identity (if controller depends on UserManager)
+            _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(userId);
+            _userManagerMock.Setup(um => um.IsInRoleAsync(It.IsAny<IdentityUser>(), "Administrator")).ReturnsAsync(isAdmin);
+
+            // Act
             var result = await _controller.Index(null, null);
 
+            // Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
             var viewResult = result as ViewResult;
             Assert.That(viewResult!.Model, Is.InstanceOf<PaginatedList<MailCarrierViewModel>>());
         }
+
 
         [Test]
         public void Create_Get_ReturnsView()
@@ -71,14 +111,30 @@ namespace ShipmentSolution.Tests.Controllers
         public async Task Create_Post_ValidModel_RedirectsToIndex()
         {
             var model = new MailCarrierCreateViewModel { FullName = "John Doe" };
+            var testUserId = "fake-user-id";
 
-            _mailCarrierServiceMock.Setup(s => s.CreateAsync(model)).Returns(Task.CompletedTask);
+            // Update mock to expect two parameters
+            _mailCarrierServiceMock
+                .Setup(s => s.CreateAsync(model, testUserId))
+                .Returns(Task.CompletedTask);
+
+            // Simulate the logged-in user
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, testUserId)
+            }, "mock"));
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = user }
+            };
 
             var result = await _controller.Create(model);
 
             Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
             Assert.That(((RedirectToActionResult)result).ActionName, Is.EqualTo("Index"));
         }
+
 
         [Test]
         public async Task Edit_Get_ReturnsViewWithModel()

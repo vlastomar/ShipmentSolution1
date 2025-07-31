@@ -135,15 +135,20 @@ namespace ShipmentSolution.Tests.Services
                 CurrentLocation = "Warehouse"
             };
 
-            await _service.CreateAsync(model);
+            var testUserId = "test-user-id"; // Simulate a logged-in user
+
+            await _service.CreateAsync(model, testUserId); // ✅ Pass userId here
 
             var carrier = await _context.MailCarriers
                 .FirstOrDefaultAsync(c => c.Email == "john@example.com");
+
             Assert.That(carrier, Is.Not.Null);
             Assert.That(carrier!.FirstName, Is.EqualTo("John"));
             Assert.That(carrier.LastName, Is.EqualTo("Doe"));
             Assert.That(carrier.Email, Is.EqualTo("john@example.com"));
+            Assert.That(carrier.CreatedByUserId, Is.EqualTo(testUserId)); // ✅ Optional: verify user tracking
         }
+
 
         [TearDown]
         public void TearDown()

@@ -81,7 +81,8 @@ namespace ShipmentSolution.Services.Core
             };
         }
 
-        public async Task CreateAsync(MailCarrierCreateViewModel model)
+        // ✅ Modified to accept and store userId
+        public async Task CreateAsync(MailCarrierCreateViewModel model, string userId)
         {
             try
             {
@@ -94,7 +95,9 @@ namespace ShipmentSolution.Services.Core
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
                     Status = model.Status,
-                    CurrentLocation = model.CurrentLocation
+                    CurrentLocation = model.CurrentLocation,
+                    CreatedByUserId = userId,
+                    IsDeleted = false
                 };
 
                 context.MailCarriers.Add(mc);
@@ -149,12 +152,34 @@ namespace ShipmentSolution.Services.Core
             }
         }
 
-        public async Task<PaginatedList<MailCarrierViewModel>> GetPaginatedAsync(int pageIndex, int pageSize, string? searchTerm, string? statusFilter)
+        public async Task<PaginatedList<MailCarrierViewModel>> GetPaginatedAsync(
+            int pageIndex,
+            int pageSize,
+            string? searchTerm,
+            string? statusFilter,
+            string? userId,
+            bool isAdmin)
         {
             try
             {
+                if (string.IsNullOrEmpty(userId) && !isAdmin)
+                {
+                    return new PaginatedList<MailCarrierViewModel>
+                    {
+                        Items = new List<MailCarrierViewModel>(),
+                        PageIndex = pageIndex,
+                        TotalPages = 0
+                    };
+                }
+
                 var query = context.MailCarriers
                     .Where(mc => !mc.IsDeleted);
+
+                // Apply ownership filter for non-admin users
+                if (!isAdmin)
+                {
+                    query = query.Where(mc => mc.CreatedByUserId == userId);
+                }
 
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
@@ -182,7 +207,8 @@ namespace ShipmentSolution.Services.Core
                         Email = mc.Email,
                         PhoneNumber = mc.PhoneNumber,
                         Status = mc.Status,
-                        CurrentLocation = mc.CurrentLocation
+                        CurrentLocation = mc.CurrentLocation,
+                        CreatedByUserId = mc.CreatedByUserId
                     })
                     .ToListAsync();
 
@@ -198,6 +224,5 @@ namespace ShipmentSolution.Services.Core
                 throw new Exception("Failed to retrieve mail carriers.");
             }
         }
-
     }
 }

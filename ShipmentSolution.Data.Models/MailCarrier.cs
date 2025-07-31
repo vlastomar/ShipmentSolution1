@@ -1,4 +1,5 @@
-﻿using ShipmentSolution.Data.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using ShipmentSolution.Data.Models;
 
 namespace ShipmentSolution.Data.Models
 {
@@ -16,6 +17,8 @@ namespace ShipmentSolution.Data.Models
         public string Status { get; set; } = null!;
         public bool IsDeleted { get; set; }
 
+        public string? CreatedByUserId { get; set; } 
+        public IdentityUser? CreatedByUser { get; set; }
 
         public ICollection<Route> Routes { get; set; } = new List<Route>();
 
