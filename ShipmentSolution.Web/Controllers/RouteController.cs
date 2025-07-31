@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ShipmentSolution.Services.Core.Interfaces;
 using ShipmentSolution.Web.ViewModels.RouteViewModels;
@@ -9,11 +10,16 @@ namespace ShipmentSolution.Web.Controllers
     {
         private readonly IRouteService routeService;
         private readonly ILogger<RouteController> logger;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public RouteController(IRouteService routeService, ILogger<RouteController> logger)
+        public RouteController(
+            IRouteService routeService,
+            ILogger<RouteController> logger,
+            UserManager<IdentityUser> userManager)
         {
             this.routeService = routeService;
             this.logger = logger;
+            this.userManager = userManager;
         }
 
         [AllowAnonymous]
@@ -23,11 +29,27 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
-                var model = await routeService.GetPaginatedAsync(page, PageSize, searchTerm, priorityFilter);
+                var isLoggedIn = User.Identity?.IsAuthenticated ?? false;
+                var isAdmin = User.IsInRole("Administrator");
+                var userId = userManager.GetUserId(User);
+
+                if (!isLoggedIn)
+                {
+                    ViewBag.ShowWarning = true;
+                    ViewBag.CurrentSearch = searchTerm;
+                    ViewBag.CurrentPriority = priorityFilter;
+                    ViewBag.PriorityOptions = new List<string> { "High", "Medium", "Low" };
+                    return View(new Web.ViewModels.Common.PaginatedList<RouteViewModel>()); // empty list
+                }
+
+                var model = await routeService.GetPaginatedAsync(
+                    page, PageSize, searchTerm, priorityFilter, userId, isAdmin);
 
                 ViewBag.CurrentSearch = searchTerm;
                 ViewBag.CurrentPriority = priorityFilter;
                 ViewBag.PriorityOptions = new List<string> { "High", "Medium", "Low" };
+                ViewBag.IsAdmin = isAdmin;
+                ViewBag.IsLoggedIn = isLoggedIn;
 
                 return View(model);
             }
@@ -70,7 +92,8 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
-                await routeService.CreateAsync(model);
+                var userId = userManager.GetUserId(User)!;
+                await routeService.CreateAsync(model, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -88,10 +111,20 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                var model = await routeService.GetForEditAsync(id);
-                if (model == null) return NotFound();
+                var route = await routeService.GetByIdAsync(id);
+                if (route == null) return NotFound();
 
+                var userId = userManager.GetUserId(User);
+                var isAdmin = User.IsInRole("Administrator");
+
+                if (!isAdmin && route.CreatedByUserId != userId)
+                {
+                    return Forbid(); // Only owner or admin can edit
+                }
+
+                var model = await routeService.GetForEditAsync(id);
                 model.MailCarriers = await routeService.GetCarrierListAsync();
+
                 return View(model);
             }
             catch (Exception ex)
@@ -114,6 +147,16 @@ namespace ShipmentSolution.Web.Controllers
 
             try
             {
+                var route = await routeService.GetByIdAsync(model.RouteId);
+                var userId = userManager.GetUserId(User);
+                var isAdmin = User.IsInRole("Administrator");
+
+                if (route == null)
+                    return NotFound();
+
+                if (!isAdmin && route.CreatedByUserId != userId)
+                    return Forbid();
+
                 await routeService.EditAsync(model);
                 return RedirectToAction(nameof(Index));
             }

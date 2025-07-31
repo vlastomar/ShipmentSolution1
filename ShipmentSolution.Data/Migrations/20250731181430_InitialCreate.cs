@@ -258,11 +258,18 @@ namespace ShipmentSolution.Data.Migrations
                     Stops = table.Column<int>(type: "int", nullable: false),
                     Distance = table.Column<float>(type: "real", nullable: false),
                     Priority = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Routes", x => x.RouteId);
+                    table.ForeignKey(
+                        name: "FK_Routes_AspNetUsers_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Routes_MailCarriers_MailCarrierId",
                         column: x => x.MailCarrierId,
@@ -338,19 +345,19 @@ namespace ShipmentSolution.Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "Routes",
-                columns: new[] { "RouteId", "Distance", "EndLocation", "IsDeleted", "MailCarrierId", "Priority", "StartLocation", "Stops" },
+                columns: new[] { "RouteId", "CreatedByUserId", "Distance", "EndLocation", "IsDeleted", "MailCarrierId", "Priority", "StartLocation", "Stops" },
                 values: new object[,]
                 {
-                    { 1, 150.5f, "Albany", false, 1, 1, "New York City", 0 },
-                    { 2, 400.2f, "San Francisco", false, 2, 1, "Los Angeles", 0 },
-                    { 3, 250.8f, "Detroit", false, 3, 1, "Chicago", 0 },
-                    { 4, 50f, "Los Angeles", false, 3, 2, "Detroit", 1 },
-                    { 5, 150.7f, "Orlando", false, 5, 1, "Miami", 0 },
-                    { 6, 0f, "Albany", false, 1, 2, "Albany", 0 },
-                    { 7, 400.2f, "Seattle", false, 2, 2, "San Francisco", 1 },
-                    { 8, 250.8f, "boston", false, 4, 1, "Denver", 0 },
-                    { 9, 50f, "Dallas", false, 4, 2, "boston", 1 },
-                    { 10, 80f, "San Francisco", false, 5, 2, "Orlando", 1 }
+                    { 1, null, 150.5f, "Albany", false, 1, 1, "New York City", 0 },
+                    { 2, null, 400.2f, "San Francisco", false, 2, 1, "Los Angeles", 0 },
+                    { 3, null, 250.8f, "Detroit", false, 3, 1, "Chicago", 0 },
+                    { 4, null, 50f, "Los Angeles", false, 3, 2, "Detroit", 1 },
+                    { 5, null, 150.7f, "Orlando", false, 5, 1, "Miami", 0 },
+                    { 6, null, 0f, "Albany", false, 1, 2, "Albany", 0 },
+                    { 7, null, 400.2f, "Seattle", false, 2, 2, "San Francisco", 1 },
+                    { 8, null, 250.8f, "Boston", false, 4, 1, "Denver", 0 },
+                    { 9, null, 50f, "Dallas", false, 4, 2, "Boston", 1 },
+                    { 10, null, 80f, "San Francisco", false, 5, 2, "Orlando", 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -454,6 +461,11 @@ namespace ShipmentSolution.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_MailCarriers_CreatedByUserId",
                 table: "MailCarriers",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Routes_CreatedByUserId",
+                table: "Routes",
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(

@@ -43,12 +43,14 @@ namespace ShipmentSolution.Services.Core
                     EndLocation = r.EndLocation,
                     Stops = r.Stops,
                     Distance = r.Distance,
-                    Priority = r.Priority
+                    Priority = r.Priority,
+                    CreatedByUserId = r.CreatedByUserId,
+                    IsOwnedByCurrentUser = false // default; set only in paginated context
                 })
                 .ToListAsync();
         }
 
-        public async Task CreateAsync(RouteCreateViewModel model)
+        public async Task CreateAsync(RouteCreateViewModel model, string userId)
         {
             var entity = new Route
             {
@@ -57,7 +59,8 @@ namespace ShipmentSolution.Services.Core
                 Stops = int.Parse(model.Stops),
                 Distance = (float)model.Distance,
                 Priority = model.Priority,
-                MailCarrierId = model.MailCarrierId
+                MailCarrierId = model.MailCarrierId,
+                CreatedByUserId = userId
             };
 
             context.Routes.Add(entity);
@@ -106,7 +109,9 @@ namespace ShipmentSolution.Services.Core
                 EndLocation = entity.EndLocation,
                 Stops = entity.Stops,
                 Distance = entity.Distance,
-                Priority = entity.Priority
+                Priority = entity.Priority,
+                CreatedByUserId = entity.CreatedByUserId,
+                IsOwnedByCurrentUser = false
             };
         }
 
@@ -143,13 +148,13 @@ namespace ShipmentSolution.Services.Core
                 .Select(c => new SelectListItem
                 {
                     Value = c.MailCarrierId.ToString(),
-                    Text = c.FirstName
+                    Text = $"{c.FirstName} {c.LastName}"
                 })
                 .ToListAsync();
         }
 
         public async Task<PaginatedList<RouteViewModel>> GetPaginatedAsync(
-            int pageIndex, int pageSize, string? searchTerm, string? priorityFilter)
+            int pageIndex, int pageSize, string? searchTerm, string? priorityFilter, string? userId, bool isAdmin)
         {
             var query = context.Routes
                 .Where(r => !r.IsDeleted);
@@ -170,6 +175,11 @@ namespace ShipmentSolution.Services.Core
                 }
             }
 
+            if (!isAdmin && !string.IsNullOrEmpty(userId))
+            {
+                query = query.Where(r => r.CreatedByUserId == userId);
+            }
+
             var totalCount = await query.CountAsync();
 
             var items = await query
@@ -180,7 +190,9 @@ namespace ShipmentSolution.Services.Core
                     EndLocation = r.EndLocation,
                     Stops = r.Stops,
                     Distance = r.Distance,
-                    Priority = r.Priority
+                    Priority = r.Priority,
+                    CreatedByUserId = r.CreatedByUserId,
+                    IsOwnedByCurrentUser = r.CreatedByUserId == userId
                 })
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)

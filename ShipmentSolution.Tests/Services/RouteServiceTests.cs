@@ -59,12 +59,16 @@ namespace ShipmentSolution.Tests.Services
                 MailCarrierId = 1
             };
 
-            await _service.CreateAsync(model);
+            string userId = "test-user-id";
+
+            await _service.CreateAsync(model, userId);
 
             var route = await _context.Routes.FirstOrDefaultAsync(r => r.StartLocation == "X");
             Assert.That(route, Is.Not.Null);
             Assert.That(route!.EndLocation, Is.EqualTo("Y"));
+            Assert.That(route.CreatedByUserId, Is.EqualTo(userId));
         }
+
 
         [Test]
         public async Task GetForEditAsync_ReturnsCorrectRoute()

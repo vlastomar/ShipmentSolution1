@@ -8,8 +8,11 @@
 @{
     ViewData["Title"] = "All Routes";
     Layout = "_Layout";
+
     bool isAdmin = User.IsInRole("Administrator");
     bool isRegistered = User.IsInRole("RegisteredUser");
+    bool isLoggedIn = User.Identity.IsAuthenticated;
+    string? currentUserId = UserManager.GetUserId(User);
 }
 
 <link rel="stylesheet" href="~/css/Route.css" />
@@ -27,7 +30,7 @@
                     <option value="">All Priorities</option>
                     @foreach (var priority in (List<string>)ViewBag.PriorityOptions)
                     {
-                        <option value="@priority" selected="@(priority == (string?)ViewBag.CurrentPriority)">
+                        <option value="@priority" selected="@(priority == (string?)ViewBag.CurrentPriority ? "selected" : null)">
                             @priority
                         </option>
                     }
@@ -46,94 +49,109 @@
         </div>
     </form>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Start</th>
-                <th>End</th>
-                <th>Stops</th>
-                <th>Distance</th>
-                <th>Priority</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var route in Model.Items)
-        {
-            <tr>
-                <td>@route.StartLocation</td>
-                <td>@route.EndLocation</td>
-                <td>@route.Stops</td>
-                <td>@route.Distance.ToString("0.##")</td>
-                <td>@route.PriorityDisplay</td>
-                <td>
-                    @if (isAdmin || isRegistered)
-                    {
-                        <a asp-action="Edit" asp-route-id="@route.RouteId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
-                    }
-                    @if (isAdmin)
-                    {
-                        <a asp-action="Delete" asp-route-id="@route.RouteId" class="btn btn-transparent-red btn-sm">Delete</a>
-                    }
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-
-    <nav aria-label="Pagination">
-        <ul class="pagination justify-content-center">
-            @if (Model.HasPreviousPage)
+    @if (!isLoggedIn)
+    {
+        <div class="alert alert-warning text-center mt-4">
+            You are not logged in, so only your associated routes are shown (if any).<br />
+            Please <a asp-area="Identity" asp-page="/Account/Login">log in</a> to manage your routes.
+        </div>
+    }
+    else if (!Model.Items.Any())
+    {
+        <div class="alert alert-warning text-center mt-4">
+            No routes available to display.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Stops</th>
+                    <th>Distance</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var route in Model.Items)
             {
-                <li class="page-item">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(Model.PageIndex - 1)"
-                       asp-route-searchTerm="@ViewBag.CurrentSearch"
-                       asp-route-priorityFilter="@ViewBag.CurrentPriority">Previous</a>
-                </li>
+                <tr>
+                    <td>@route.StartLocation</td>
+                    <td>@route.EndLocation</td>
+                    <td>@route.Stops</td>
+                    <td>@route.Distance.ToString("0.##")</td>
+                    <td>@route.PriorityDisplay</td>
+                    <td>
+                        @if (isAdmin || route.CreatedByUserId == currentUserId)
+                        {
+                            <a asp-action="Edit" asp-route-id="@route.RouteId" class="btn btn-transparent-yellow btn-sm me-1">Edit</a>
+                        }
+                        @if (isAdmin)
+                        {
+                            <a asp-action="Delete" asp-route-id="@route.RouteId" class="btn btn-transparent-red btn-sm">Delete</a>
+                        }
+                    </td>
+                </tr>
             }
-            else
-            {
-                <li class="page-item disabled"><span class="page-link">Previous</span></li>
-            }
+            </tbody>
+        </table>
 
-            @for (int i = 1; i <= Model.TotalPages; i++)
-            {
-                if (i == Model.PageIndex)
-                {
-                    <li class="page-item active"><span class="page-link">@i</span></li>
-                }
-                else
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+                @if (Model.HasPreviousPage)
                 {
                     <li class="page-item">
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-page="@i"
+                           asp-route-page="@(Model.PageIndex - 1)"
                            asp-route-searchTerm="@ViewBag.CurrentSearch"
-                           asp-route-priorityFilter="@ViewBag.CurrentPriority">@i</a>
+                           asp-route-priorityFilter="@ViewBag.CurrentPriority">Previous</a>
                     </li>
                 }
-            }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                }
 
-            @if (Model.HasNextPage)
-            {
-                <li class="page-item">
-                    <a class="page-link"
-                       asp-action="Index"
-                       asp-route-page="@(Model.PageIndex + 1)"
-                       asp-route-searchTerm="@ViewBag.CurrentSearch"
-                       asp-route-priorityFilter="@ViewBag.CurrentPriority">Next</a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled"><span class="page-link">Next</span></li>
-            }
-        </ul>
-    </nav>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    if (i == Model.PageIndex)
+                    {
+                        <li class="page-item active"><span class="page-link">@i</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-searchTerm="@ViewBag.CurrentSearch"
+                               asp-route-priorityFilter="@ViewBag.CurrentPriority">@i</a>
+                        </li>
+                    }
+                }
 
-    <!--  Back Button -->
+                @if (Model.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageIndex + 1)"
+                           asp-route-searchTerm="@ViewBag.CurrentSearch"
+                           asp-route-priorityFilter="@ViewBag.CurrentPriority">Next</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">Next</span></li>
+                }
+            </ul>
+        </nav>
+    }
+
     <div class="text-center mt-3">
         <a asp-controller="Home" asp-action="Index" class="btn btn-transparent-blue">Back</a>
     </div>

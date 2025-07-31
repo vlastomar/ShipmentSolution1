@@ -19,21 +19,29 @@ namespace ShipmentSolution.Data.Configurations
                    .HasMaxLength(ValidationConstants.Route.LocationMaxLength)
                    .IsRequired();
 
+            // ✅ Configure CreatedByUser relationship
+            builder.HasOne(r => r.CreatedByUser)
+                   .WithMany()
+                   .HasForeignKey(r => r.CreatedByUserId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(r => r.Deliveries)
                    .WithOne(d => d.Route)
-                   .HasForeignKey(d => d.RouteId);
+                   .HasForeignKey(d => d.RouteId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
+            // ✅ Use positive MailCarrierId values (1–5) to match MailCarrier seed
             builder.HasData(
-                new Route { RouteId = 1, MailCarrierId = 1, StartLocation = "New York City", EndLocation = "Albany", Stops = 0, Distance = 150.5f, Priority = 1 },
-                new Route { RouteId = 2, MailCarrierId = 2, StartLocation = "Los Angeles", EndLocation = "San Francisco", Stops = 0, Distance = 400.2f, Priority = 1 },
-                new Route { RouteId = 3, MailCarrierId = 3, StartLocation = "Chicago", EndLocation = "Detroit", Stops = 0, Distance = 250.8f, Priority = 1 },
-                new Route { RouteId = 4, MailCarrierId = 3, StartLocation = "Detroit", EndLocation = "Los Angeles", Stops = 1, Distance = 50f, Priority = 2 },
-                new Route { RouteId = 5, MailCarrierId = 5, StartLocation = "Miami", EndLocation = "Orlando", Stops = 0, Distance = 150.7f, Priority = 1 },
-                new Route { RouteId = 6, MailCarrierId = 1, StartLocation = "Albany", EndLocation = "Albany", Stops = 0, Distance = 0f, Priority = 2 },
-                new Route { RouteId = 7, MailCarrierId = 2, StartLocation = "San Francisco", EndLocation = "Seattle", Stops = 1, Distance = 400.2f, Priority = 2 },
-                new Route { RouteId = 8, MailCarrierId = 4, StartLocation = "Denver", EndLocation = "boston", Stops = 0, Distance = 250.8f, Priority = 1 },
-                new Route { RouteId = 9, MailCarrierId = 4, StartLocation = "boston", EndLocation = "Dallas", Stops = 1, Distance = 50f, Priority = 2 },
-                new Route { RouteId = 10, MailCarrierId = 5, StartLocation = "Orlando", EndLocation = "San Francisco", Stops = 1, Distance = 80f, Priority = 2 }
+                new Route { RouteId = 1, MailCarrierId = 1, StartLocation = "New York City", EndLocation = "Albany", Stops = 0, Distance = 150.5f, Priority = 1, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 2, MailCarrierId = 2, StartLocation = "Los Angeles", EndLocation = "San Francisco", Stops = 0, Distance = 400.2f, Priority = 1, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 3, MailCarrierId = 3, StartLocation = "Chicago", EndLocation = "Detroit", Stops = 0, Distance = 250.8f, Priority = 1, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 4, MailCarrierId = 3, StartLocation = "Detroit", EndLocation = "Los Angeles", Stops = 1, Distance = 50f, Priority = 2, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 5, MailCarrierId = 5, StartLocation = "Miami", EndLocation = "Orlando", Stops = 0, Distance = 150.7f, Priority = 1, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 6, MailCarrierId = 1, StartLocation = "Albany", EndLocation = "Albany", Stops = 0, Distance = 0f, Priority = 2, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 7, MailCarrierId = 2, StartLocation = "San Francisco", EndLocation = "Seattle", Stops = 1, Distance = 400.2f, Priority = 2, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 8, MailCarrierId = 4, StartLocation = "Denver", EndLocation = "Boston", Stops = 0, Distance = 250.8f, Priority = 1, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 9, MailCarrierId = 4, StartLocation = "Boston", EndLocation = "Dallas", Stops = 1, Distance = 50f, Priority = 2, CreatedByUserId = null, IsDeleted = false },
+                new Route { RouteId = 10, MailCarrierId = 5, StartLocation = "Orlando", EndLocation = "San Francisco", Stops = 1, Distance = 80f, Priority = 2, CreatedByUserId = null, IsDeleted = false }
             );
         }
     }

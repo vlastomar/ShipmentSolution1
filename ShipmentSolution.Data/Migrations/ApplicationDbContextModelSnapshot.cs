@@ -626,6 +626,9 @@ namespace ShipmentSolution.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RouteId"));
 
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<float>("Distance")
                         .HasColumnType("real");
 
@@ -652,6 +655,8 @@ namespace ShipmentSolution.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("RouteId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("MailCarrierId");
 
@@ -739,7 +744,7 @@ namespace ShipmentSolution.Data.Migrations
                         {
                             RouteId = 8,
                             Distance = 250.8f,
-                            EndLocation = "boston",
+                            EndLocation = "Boston",
                             IsDeleted = false,
                             MailCarrierId = 4,
                             Priority = 1,
@@ -754,7 +759,7 @@ namespace ShipmentSolution.Data.Migrations
                             IsDeleted = false,
                             MailCarrierId = 4,
                             Priority = 2,
-                            StartLocation = "boston",
+                            StartLocation = "Boston",
                             Stops = 1
                         },
                         new
@@ -1032,11 +1037,18 @@ namespace ShipmentSolution.Data.Migrations
 
             modelBuilder.Entity("ShipmentSolution.Data.Models.Route", b =>
                 {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ShipmentSolution.Data.Models.MailCarrier", "MailCarrier")
                         .WithMany("Routes")
                         .HasForeignKey("MailCarrierId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("MailCarrier");
                 });
