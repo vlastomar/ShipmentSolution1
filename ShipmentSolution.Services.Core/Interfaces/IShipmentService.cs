@@ -9,15 +9,15 @@ namespace ShipmentSolution.Services.Core.Interfaces
     {
         Task<IEnumerable<ShipmentViewModel>> GetAllAsync();
 
-        Task<ShipmentCreateViewModel> PrepareCreateViewModelAsync();
+        Task<ShipmentCreateViewModel> PrepareCreateViewModelAsync(string userId, ClaimsPrincipal user);
 
         Task CreateAsync(ShipmentCreateViewModel model, string userId);
 
-        Task<ShipmentEditViewModel> GetForEditAsync(int id, string userId, ClaimsPrincipal user);
+        Task<ShipmentEditViewModel?> GetForEditAsync(int id, string userId, ClaimsPrincipal user);
 
         Task<bool> EditAsync(ShipmentEditViewModel model, string userId, ClaimsPrincipal user);
 
-        Task<ShipmentDeleteViewModel> GetForDeleteAsync(int id);
+        Task<ShipmentDeleteViewModel?> GetForDeleteAsync(int id);
 
         Task<bool> DeleteAsync(int id, string userId, ClaimsPrincipal user);
 
@@ -29,10 +29,10 @@ namespace ShipmentSolution.Services.Core.Interfaces
             string? userId,
             bool isAdmin);
 
-        Task<IEnumerable<SelectListItem>> GetCustomerListAsync();
+        Task<IEnumerable<SelectListItem>> GetCustomerListAsync(string userId, ClaimsPrincipal user);
 
-        Task<IEnumerable<SelectListItem>> GetCarrierListAsync();
+        Task<IEnumerable<SelectListItem>> GetCarrierListAsync(string userId, ClaimsPrincipal user);
 
-        Task<IEnumerable<SelectListItem>> GetRouteListAsync();
+        Task<IEnumerable<SelectListItem>> GetRouteListAsync(string userId, ClaimsPrincipal user);
     }
 }

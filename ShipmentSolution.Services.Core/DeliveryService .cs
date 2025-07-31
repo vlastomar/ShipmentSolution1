@@ -203,11 +203,14 @@ namespace ShipmentSolution.Services.Core
 
             if (d == null) throw new Exception("Delivery not found.");
 
+            // Only admin or owner can edit
             if (!user.IsInRole("Administrator") && d.Shipment.CreatedByUserId != userId)
                 return null;
 
+            bool isAdmin = user.IsInRole("Administrator");
+
             var shipments = await context.Shipments
-                .Where(s => !s.IsDeleted)
+                .Where(s => !s.IsDeleted && (isAdmin || s.CreatedByUserId == userId))
                 .Select(s => new SelectListItem
                 {
                     Value = s.ShipmentId.ToString(),
@@ -215,7 +218,7 @@ namespace ShipmentSolution.Services.Core
                 }).ToListAsync();
 
             var mailCarriers = await context.MailCarriers
-                .Where(m => !m.IsDeleted)
+                .Where(m => !m.IsDeleted && (isAdmin || m.CreatedByUserId == userId))
                 .Select(m => new SelectListItem
                 {
                     Value = m.MailCarrierId.ToString(),
@@ -223,7 +226,7 @@ namespace ShipmentSolution.Services.Core
                 }).ToListAsync();
 
             var routes = await context.Routes
-                .Where(r => !r.IsDeleted)
+                .Where(r => !r.IsDeleted && (isAdmin || r.CreatedByUserId == userId))
                 .Select(r => new SelectListItem
                 {
                     Value = r.RouteId.ToString(),
@@ -242,6 +245,7 @@ namespace ShipmentSolution.Services.Core
                 Routes = routes
             };
         }
+
 
         public async Task CreateAsync(DeliveryCreateViewModel model, string userId)
         {
@@ -345,5 +349,98 @@ namespace ShipmentSolution.Services.Core
                 })
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<SelectListItem>> GetCarrierListAsync(string userId, ClaimsPrincipal user)
+        {
+            var isAdmin = user.IsInRole("Administrator");
+
+            var query = context.MailCarriers.AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(c => c.CreatedByUserId == userId);
+            }
+
+            return await query
+                .Select(c => new SelectListItem
+                {
+                    Value = c.MailCarrierId.ToString(),
+                    Text = c.FirstName + " " + c.LastName
+                })
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetRouteListAsync(string userId, ClaimsPrincipal user)
+        {
+            var isAdmin = user.IsInRole("Administrator");
+
+            var query = context.Routes.AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(r => r.CreatedByUserId == userId);
+            }
+
+            return await query
+                .Select(r => new SelectListItem
+                {
+                    Value = r.RouteId.ToString(),
+                    Text = $"{r.StartLocation} → {r.EndLocation}"
+                })
+                .ToListAsync();
+        }
+
+        public async Task<DeliveryCreateViewModel> PrepareCreateViewModelAsync(string userId, ClaimsPrincipal user)
+        {
+            bool isAdmin = user.IsInRole("Administrator");
+
+            var model = new DeliveryCreateViewModel
+            {
+                Shipments = await context.Shipments
+                    .Where(s => !s.IsDeleted && (isAdmin || s.CreatedByUserId == userId))
+                    .Select(s => new SelectListItem
+                    {
+                        Value = s.ShipmentId.ToString(),
+                        Text = $"#{s.ShipmentId} - {s.ShippingMethod}"
+                    })
+                    .ToListAsync(),
+
+                MailCarriers = await context.MailCarriers
+                    .Where(c => !c.IsDeleted && (isAdmin || c.CreatedByUserId == userId))
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.MailCarrierId.ToString(),
+                        Text = $"{c.FirstName} {c.LastName}"
+                    })
+                    .ToListAsync(),
+
+                Routes = await context.Routes
+                    .Where(r => !r.IsDeleted && (isAdmin || r.CreatedByUserId == userId))
+                    .Select(r => new SelectListItem
+                    {
+                        Value = r.RouteId.ToString(),
+                        Text = $"{r.StartLocation} → {r.EndLocation}"
+                    })
+                    .ToListAsync()
+            };
+
+            return model;
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetShipmentListAsync(string userId, ClaimsPrincipal user)
+        {
+            bool isAdmin = user.IsInRole("Administrator");
+
+            return await context.Shipments
+                .Where(s => !s.IsDeleted && (isAdmin || s.CreatedByUserId == userId))
+                .Select(s => new SelectListItem
+                {
+                    Value = s.ShipmentId.ToString(),
+                    Text = $"#{s.ShipmentId} - {s.ShippingMethod}"
+                })
+                .ToListAsync();
+        }
+
+
     }
 }

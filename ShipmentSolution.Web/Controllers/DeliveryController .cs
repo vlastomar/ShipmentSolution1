@@ -59,15 +59,21 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
-                var model = await deliveryService.GetCreateModelAsync(userId, User);
+                var model = new DeliveryCreateViewModel
+                {
+                    MailCarriers = await deliveryService.GetCarrierListAsync(userId, User),
+                    Routes = await deliveryService.GetRouteListAsync(userId, User),
+                    Shipments = await deliveryService.GetShipmentListAsync(userId, User) // ✅ Add this line
+                };
                 return View(model);
             }
-            catch
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", "Failed to load form data.");
-                return View();
+                //logger.LogError(ex, "Error loading delivery creation form.");
+                return RedirectToAction("Error500", "Home");
             }
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

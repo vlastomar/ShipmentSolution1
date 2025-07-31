@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ShipmentSolution.Web.ViewModels.ShipmentViewModels;
-using ShipmentSolution.Services.Core.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using ShipmentSolution.Services.Core.Interfaces;
+using ShipmentSolution.Web.ViewModels.ShipmentViewModels;
 using System.Security.Claims;
 
 namespace ShipmentSolution.Web.Controllers
@@ -60,7 +60,8 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                var model = await shipmentService.PrepareCreateViewModelAsync();
+                string userId = userManager.GetUserId(User);
+                var model = await shipmentService.PrepareCreateViewModelAsync(userId, User);
                 return View(model);
             }
             catch (Exception ex)
@@ -75,15 +76,16 @@ namespace ShipmentSolution.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Create(ShipmentCreateViewModel model)
         {
+            string userId = userManager.GetUserId(User);
+
             if (!ModelState.IsValid)
             {
-                model = await shipmentService.PrepareCreateViewModelAsync();
+                model = await shipmentService.PrepareCreateViewModelAsync(userId, User);
                 return View(model);
             }
 
             try
             {
-                string userId = userManager.GetUserId(User);
                 await shipmentService.CreateAsync(model, userId);
                 return RedirectToAction(nameof(Index));
             }
@@ -91,7 +93,7 @@ namespace ShipmentSolution.Web.Controllers
             {
                 logger.LogError(ex, "Error creating shipment.");
                 ModelState.AddModelError("", "An error occurred while creating the shipment.");
-                model = await shipmentService.PrepareCreateViewModelAsync();
+                model = await shipmentService.PrepareCreateViewModelAsync(userId, User);
                 return View(model);
             }
         }
@@ -121,15 +123,16 @@ namespace ShipmentSolution.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(ShipmentEditViewModel model)
         {
+            string userId = userManager.GetUserId(User);
+
             if (!ModelState.IsValid)
             {
-                model.Customers = await shipmentService.GetCustomerListAsync();
+                model.Customers = await shipmentService.GetCustomerListAsync(userId, User);
                 return View(model);
             }
 
             try
             {
-                string userId = userManager.GetUserId(User);
                 bool success = await shipmentService.EditAsync(model, userId, User);
                 if (!success)
                     return Unauthorized();
@@ -140,10 +143,11 @@ namespace ShipmentSolution.Web.Controllers
             {
                 logger.LogError(ex, "Error editing shipment.");
                 ModelState.AddModelError("", "An error occurred while editing the shipment.");
-                model.Customers = await shipmentService.GetCustomerListAsync();
+                model.Customers = await shipmentService.GetCustomerListAsync(userId, User);
                 return View(model);
             }
         }
+
 
         [HttpGet]
         [Authorize(Roles = "Administrator")]

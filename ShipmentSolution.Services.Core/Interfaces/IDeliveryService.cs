@@ -1,4 +1,5 @@
-﻿using ShipmentSolution.Web.ViewModels.Common;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.DeliveryViewModels;
 using System.Security.Claims;
 
@@ -6,6 +7,13 @@ namespace ShipmentSolution.Services.Core.Interfaces
 {
     public interface IDeliveryService
     {
+        Task<IEnumerable<SelectListItem>> GetShipmentListAsync(string userId, ClaimsPrincipal user);
+
+        Task<DeliveryCreateViewModel> PrepareCreateViewModelAsync(string userId, ClaimsPrincipal user);
+
+        Task<IEnumerable<SelectListItem>> GetCarrierListAsync(string userId, ClaimsPrincipal user);
+        Task<IEnumerable<SelectListItem>> GetRouteListAsync(string userId, ClaimsPrincipal user);
+
         Task<IEnumerable<DeliveryViewModel>> GetAllAsync();
 
         Task<DeliveryCreateViewModel> GetCreateModelAsync(string userId, ClaimsPrincipal user);

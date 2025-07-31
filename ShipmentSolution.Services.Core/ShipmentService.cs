@@ -34,16 +34,17 @@ namespace ShipmentSolution.Services.Core
                 .ToListAsync();
         }
 
-        public async Task<ShipmentCreateViewModel> PrepareCreateViewModelAsync()
+        public async Task<ShipmentCreateViewModel> PrepareCreateViewModelAsync(string userId, ClaimsPrincipal user)
+    {
+        return new ShipmentCreateViewModel
         {
-            return new ShipmentCreateViewModel
-            {
-                Customers = await GetCustomerListAsync(),
-                Carriers = await GetCarrierListAsync(),
-                Routes = await GetRouteListAsync(),
-                ShippingMethods = GetStaticShippingMethods()
-            };
-        }
+            Customers = await GetCustomerListAsync(userId, user),
+            Carriers = await GetCarrierListAsync(userId, user),
+            Routes = await GetRouteListAsync(userId, user),
+            ShippingMethods = GetStaticShippingMethods()
+        };
+    }
+
 
         public async Task CreateAsync(ShipmentCreateViewModel model, string userId)
         {
@@ -91,10 +92,11 @@ namespace ShipmentSolution.Services.Core
                 ShippingCost = shipment.ShippingCost,
                 DeliveryDate = shipment.DeliveryDate,
                 CustomerId = shipment.CustomerId,
-                Customers = await GetCustomerListAsync(),
+                Customers = await GetCustomerListAsync(userId, user),
                 ShippingMethods = GetStaticShippingMethods()
             };
         }
+
 
         public async Task<bool> EditAsync(ShipmentEditViewModel model, string userId, ClaimsPrincipal user)
         {
@@ -168,7 +170,7 @@ namespace ShipmentSolution.Services.Core
             }
             else if (!isAdmin && string.IsNullOrEmpty(userId))
             {
-                query = query.Where(s => false); // anonymous users see nothing
+                query = query.Where(s => false); // Anonymous users see nothing
             }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -208,9 +210,18 @@ namespace ShipmentSolution.Services.Core
             };
         }
 
-        public async Task<IEnumerable<SelectListItem>> GetCustomerListAsync()
+        public async Task<IEnumerable<SelectListItem>> GetCustomerListAsync(string userId, ClaimsPrincipal user)
         {
-            return await context.Customers
+            bool isAdmin = user.IsInRole("Administrator");
+
+            var query = context.Customers.AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(c => c.CreatedByUserId == userId);
+            }
+
+            return await query
                 .Select(c => new SelectListItem
                 {
                     Value = c.CustomerId.ToString(),
@@ -219,9 +230,19 @@ namespace ShipmentSolution.Services.Core
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<SelectListItem>> GetCarrierListAsync()
+
+        public async Task<IEnumerable<SelectListItem>> GetCarrierListAsync(string userId, ClaimsPrincipal user)
         {
-            return await context.MailCarriers
+            bool isAdmin = user.IsInRole("Administrator");
+
+            var query = context.MailCarriers.AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(c => c.CreatedByUserId == userId);
+            }
+
+            return await query
                 .Select(c => new SelectListItem
                 {
                     Value = c.MailCarrierId.ToString(),
@@ -230,9 +251,19 @@ namespace ShipmentSolution.Services.Core
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<SelectListItem>> GetRouteListAsync()
+
+        public async Task<IEnumerable<SelectListItem>> GetRouteListAsync(string userId, ClaimsPrincipal user)
         {
-            return await context.Routes
+            bool isAdmin = user.IsInRole("Administrator");
+
+            var query = context.Routes.AsQueryable();
+
+            if (!isAdmin)
+            {
+                query = query.Where(r => r.CreatedByUserId == userId);
+            }
+
+            return await query
                 .Select(r => new SelectListItem
                 {
                     Value = r.RouteId.ToString(),
@@ -240,6 +271,8 @@ namespace ShipmentSolution.Services.Core
                 })
                 .ToListAsync();
         }
+
+
 
         private List<SelectListItem> GetStaticShippingMethods()
         {
