@@ -66,10 +66,14 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
+                var userId = userManager.GetUserId(User);
+
                 var model = new RouteCreateViewModel
                 {
-                    MailCarriers = await routeService.GetCarrierListAsync()
+                    
+                    MailCarriers = await routeService.GetMailCarriersAsync(userId, User)
                 };
+
                 return View(model);
             }
             catch (Exception ex)

@@ -2,10 +2,13 @@
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.RouteViewModels;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ShipmentSolution.Services.Core.Interfaces
 {
+
+
     public interface IRouteService
     {
         Task<IEnumerable<RouteViewModel>> GetAllAsync();
@@ -21,6 +24,8 @@ namespace ShipmentSolution.Services.Core.Interfaces
         Task CreateAsync(RouteCreateViewModel model, string userId);
 
         Task<RouteEditViewModel> GetForEditAsync(int id);
+        Task<IEnumerable<SelectListItem>> GetMailCarriersAsync(string userId, ClaimsPrincipal user);
+
 
         Task EditAsync(RouteEditViewModel model);
 

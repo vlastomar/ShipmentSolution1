@@ -8,6 +8,7 @@ using ShipmentSolution.Web.ViewModels.RouteViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ShipmentSolution.Services.Core
@@ -205,5 +206,27 @@ namespace ShipmentSolution.Services.Core
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
         }
+
+        public async Task<IEnumerable<SelectListItem>> GetMailCarriersAsync(string userId, ClaimsPrincipal user)
+        {
+            var isAdmin = user.IsInRole("Administrator");
+
+            var query = context.MailCarriers.Where(c => !c.IsDeleted);
+
+            if (!isAdmin)
+            {
+                query = query.Where(c => c.CreatedByUserId == userId);
+            }
+
+            return await query
+                .Select(c => new SelectListItem
+                {
+                    Value = c.MailCarrierId.ToString(),
+                    Text = c.FirstName + " " + c.LastName
+                })
+                .ToListAsync();
+        }
+
+
     }
 }
