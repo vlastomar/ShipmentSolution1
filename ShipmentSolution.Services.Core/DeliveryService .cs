@@ -19,13 +19,13 @@ namespace ShipmentSolution.Services.Core
         }
 
         public async Task<PaginatedList<DeliveryViewModel>> GetPaginatedAsync(
-            int pageIndex,
-            int pageSize,
-            string? searchTerm,
-            string? mailCarrierFilter,
-            string? userId,
-            bool isAdmin,
-            bool isLoggedIn)
+    int pageIndex,
+    int pageSize,
+    string? searchTerm,
+    string? mailCarrierFilter,
+    string? userId,
+    bool isAdmin,
+    bool isLoggedIn)
         {
             try
             {
@@ -36,15 +36,33 @@ namespace ShipmentSolution.Services.Core
                     .Include(d => d.MailCarrier)
                     .AsQueryable();
 
-                if (!isAdmin && isLoggedIn && !string.IsNullOrEmpty(userId))
+                if (!isLoggedIn)
                 {
-                    query = query.Where(d => d.Shipment.CreatedByUserId == userId);
+                    query = query.Where(d => false); // Unauthenticated users see nothing
                 }
-                else if (!isLoggedIn)
+                else if (!isAdmin && !string.IsNullOrEmpty(userId))
                 {
-                    query = query.Where(d => false); // Hide all for unlogged users
+                    // Only own records for non-admins
+                    query = query.Where(d => d.Shipment.CreatedByUserId == userId);
+
+                    // Apply mail carrier filter only within user's data
+                    if (!string.IsNullOrWhiteSpace(mailCarrierFilter))
+                    {
+                        query = query.Where(d =>
+                            (d.MailCarrier.FirstName + " " + d.MailCarrier.LastName) == mailCarrierFilter);
+                    }
+                }
+                else if (isAdmin)
+                {
+                    // Admin can see and filter all
+                    if (!string.IsNullOrWhiteSpace(mailCarrierFilter))
+                    {
+                        query = query.Where(d =>
+                            (d.MailCarrier.FirstName + " " + d.MailCarrier.LastName) == mailCarrierFilter);
+                    }
                 }
 
+                // Apply search filter
                 if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
                     searchTerm = searchTerm.ToLower();
@@ -53,12 +71,6 @@ namespace ShipmentSolution.Services.Core
                         d.Shipment.Customer.LastName.ToLower().Contains(searchTerm) ||
                         d.MailCarrier.FirstName.ToLower().Contains(searchTerm) ||
                         d.MailCarrier.LastName.ToLower().Contains(searchTerm));
-                }
-
-                if (!string.IsNullOrWhiteSpace(mailCarrierFilter))
-                {
-                    query = query.Where(d =>
-                        (d.MailCarrier.FirstName + " " + d.MailCarrier.LastName) == mailCarrierFilter);
                 }
 
                 var totalItems = await query.CountAsync();
