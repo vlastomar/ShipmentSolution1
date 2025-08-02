@@ -6,6 +6,7 @@
 <h2>Edit Delivery</h2>
 
 <form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="DeliveryId" />
 
     <div class="form-group">

@@ -10,6 +10,7 @@
     <div class="col-md-4">
         <!-- IMPORTANT: action uses Razor Pages binding -->
         <form method="post">
+            @Html.AntiForgeryToken()
             <h2>Create a new account</h2>
             <hr />
             
@@ -58,6 +59,7 @@
             else
             {
                 <form asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    @Html.AntiForgeryToken()
                     <div>
                         @foreach (var provider in Model.ExternalLogins!)
                         {

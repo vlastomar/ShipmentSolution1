@@ -3,6 +3,7 @@
 <h2>Edit Mail Carrier</h2>
 
 <form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="MailCarrierId" />
 
     <div class="form-group">
