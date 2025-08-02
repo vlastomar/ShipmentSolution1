@@ -23,7 +23,6 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 const int PageSize = 5;
-
                 var userId = userManager.GetUserId(User);
                 var isAdmin = User.IsInRole("Administrator");
                 var isLoggedIn = User.Identity!.IsAuthenticated;
@@ -63,17 +62,15 @@ namespace ShipmentSolution.Web.Controllers
                 {
                     MailCarriers = await deliveryService.GetCarrierListAsync(userId, User),
                     Routes = await deliveryService.GetRouteListAsync(userId, User),
-                    Shipments = await deliveryService.GetShipmentListAsync(userId, User) // ✅ Add this line
+                    Shipments = await deliveryService.GetShipmentListAsync(userId, User)
                 };
                 return View(model);
             }
-            catch (Exception ex)
+            catch
             {
-                //logger.LogError(ex, "Error loading delivery creation form.");
                 return RedirectToAction("Error500", "Home");
             }
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]

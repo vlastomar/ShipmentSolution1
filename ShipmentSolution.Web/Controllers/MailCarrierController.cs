@@ -60,13 +60,7 @@ namespace ShipmentSolution.Web.Controllers
         {
             var model = new MailCarrierCreateViewModel
             {
-                StatusOptions = new List<SelectListItem>
-                {
-                    new SelectListItem { Text = "-- Select Status --", Value = "" },
-                    new SelectListItem { Text = "Available", Value = "Available" },
-                    new SelectListItem { Text = "On Break", Value = "On Break" },
-                    new SelectListItem { Text = "On a Delivery", Value = "On a Delivery" }
-                }
+                StatusOptions = GetStatusOptions()
             };
 
             return View(model);
@@ -86,7 +80,7 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                await mailCarrierService.CreateAsync(model, userId); // 🔁 Pass userId to service
+                await mailCarrierService.CreateAsync(model, userId);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -176,7 +170,6 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
-        // Helper to reuse dropdown list
         private List<SelectListItem> GetStatusOptions()
         {
             return new List<SelectListItem>

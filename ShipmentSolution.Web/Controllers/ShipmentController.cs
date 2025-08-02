@@ -54,7 +54,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrator,RegisteredUser")]
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -73,7 +73,7 @@ namespace ShipmentSolution.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
+        [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Create(ShipmentCreateViewModel model)
         {
             string userId = userManager.GetUserId(User);
@@ -99,7 +99,7 @@ namespace ShipmentSolution.Web.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(int id)
         {
             try
@@ -120,7 +120,7 @@ namespace ShipmentSolution.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
+        [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(ShipmentEditViewModel model)
         {
             string userId = userManager.GetUserId(User);
@@ -147,7 +147,6 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
         }
-
 
         [HttpGet]
         [Authorize(Roles = "Administrator")]

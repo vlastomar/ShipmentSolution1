@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShipmentSolution.Data.Models;
 using ShipmentSolution.Web.ViewModels;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ namespace ShipmentSolution.Web.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
             try
@@ -27,6 +29,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             try
@@ -40,7 +43,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
-        // Default error handler
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -55,7 +58,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
-        // 404 Not Found custom page
+        [AllowAnonymous]
         public IActionResult Error404()
         {
             try
@@ -69,7 +72,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
-        // 500 Internal Server Error custom page
+        [AllowAnonymous]
         public IActionResult Error500()
         {
             try

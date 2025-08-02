@@ -39,7 +39,7 @@ namespace ShipmentSolution.Web.Controllers
                     ViewBag.CurrentSearch = searchTerm;
                     ViewBag.CurrentPriority = priorityFilter;
                     ViewBag.PriorityOptions = new List<string> { "High", "Medium", "Low" };
-                    return View(new Web.ViewModels.Common.PaginatedList<RouteViewModel>()); // empty list
+                    return View(new Web.ViewModels.Common.PaginatedList<RouteViewModel>());
                 }
 
                 var model = await routeService.GetPaginatedAsync(
@@ -67,10 +67,8 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
-
                 var model = new RouteCreateViewModel
                 {
-                    
                     MailCarriers = await routeService.GetMailCarriersAsync(userId, User)
                 };
 
@@ -123,7 +121,7 @@ namespace ShipmentSolution.Web.Controllers
 
                 if (!isAdmin && route.CreatedByUserId != userId)
                 {
-                    return Forbid(); // Only owner or admin can edit
+                    return Forbid();
                 }
 
                 var model = await routeService.GetForEditAsync(id);

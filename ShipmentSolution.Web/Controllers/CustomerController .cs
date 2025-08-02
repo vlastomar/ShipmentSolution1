@@ -19,6 +19,7 @@ namespace ShipmentSolution.Web.Controllers
             this.userManager = userManager;
         }
 
+        // Public listing based on authentication logic inside the service
         public async Task<IActionResult> Index(string? searchTerm, int page = 1)
         {
             const int PageSize = 5;
