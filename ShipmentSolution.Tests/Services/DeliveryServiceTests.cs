@@ -5,6 +5,7 @@ using ShipmentSolution.Data.Models;
 using ShipmentSolution.Services.Core;
 using ShipmentSolution.Web.ViewModels.DeliveryViewModels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -31,7 +32,6 @@ namespace ShipmentSolution.Tests.Services
         [Test]
         public async Task GetAllAsync_ReturnsOnlyNonDeletedDeliveries()
         {
-            // Arrange
             var shipment = new ShipmentEntity
             {
                 ShippingMethod = "Express",
@@ -79,18 +79,15 @@ namespace ShipmentSolution.Tests.Services
             _context.AddRange(shipment, carrier, route, delivery1, delivery2);
             await _context.SaveChangesAsync();
 
-            // Act
             var result = await _service.GetAllAsync();
             var matching = result.Where(d => d.MailCarrierName == "Mike Brown" && d.Route == "A → B").ToList();
 
-            // Assert
             Assert.That(matching.Count, Is.EqualTo(1));
         }
 
         [Test]
         public async Task CreateAsync_AddsDelivery()
         {
-            // Arrange
             var testUserId = "test-user-id";
 
             var shipment = new ShipmentEntity
@@ -131,10 +128,8 @@ namespace ShipmentSolution.Tests.Services
                 DateDelivered = new DateTime(2024, 1, 1)
             };
 
-            // Act
             await _service.CreateAsync(model, testUserId);
 
-            // Assert
             var delivery = await _context.Deliveries
                 .FirstOrDefaultAsync(d => d.DateDelivered == model.DateDelivered);
 
@@ -145,7 +140,6 @@ namespace ShipmentSolution.Tests.Services
         [Test]
         public async Task GetForEditAsync_ReturnsCorrectViewModel()
         {
-            // Arrange
             var testUserId = "test-user-id";
 
             var shipment = new ShipmentEntity
@@ -187,17 +181,15 @@ namespace ShipmentSolution.Tests.Services
             await _context.SaveChangesAsync();
 
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, testUserId),
-        new Claim(ClaimTypes.Role, "RegisteredUser")
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, testUserId),
+                new Claim(ClaimTypes.Role, "RegisteredUser")
+            };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var userPrincipal = new ClaimsPrincipal(identity);
 
-            // Act
             var result = await _service.GetForEditAsync(delivery.DeliveryId, testUserId, userPrincipal);
 
-            // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.DateDelivered, Is.EqualTo(delivery.DateDelivered));
             Assert.That(result.Shipments.Any(), Is.True);
@@ -205,27 +197,24 @@ namespace ShipmentSolution.Tests.Services
             Assert.That(result.Routes.Any(), Is.True);
         }
 
-
         [Test]
-        public async Task GetForEditAsync_Throws_WhenDeliveryNotFound()
+        public Task GetForEditAsync_Throws_WhenDeliveryNotFound()
         {
-            // Arrange
             var testUserId = "test-user-id";
             var claims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.NameIdentifier, testUserId),
-                    new Claim(ClaimTypes.Role, "RegisteredUser")
-                };
+            {
+                new Claim(ClaimTypes.NameIdentifier, testUserId),
+                new Claim(ClaimTypes.Role, "RegisteredUser")
+            };
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var userPrincipal = new ClaimsPrincipal(identity);
 
-            // Act & Assert
             var ex = Assert.ThrowsAsync<Exception>(() =>
-             _service.GetForEditAsync(999, testUserId, userPrincipal));
+                _service.GetForEditAsync(999, testUserId, userPrincipal));
 
             Assert.That(ex!.Message, Is.EqualTo("Delivery not found."));
+            return Task.CompletedTask;
         }
-
 
         [TearDown]
         public void TearDown()

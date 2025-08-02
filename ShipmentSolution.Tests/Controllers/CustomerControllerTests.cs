@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using ShipmentSolution.Services.Core.Interfaces;
@@ -25,8 +28,25 @@ namespace ShipmentSolution.Tests.Controllers
             _mockService = new Mock<ICustomerService>();
 
             var store = new Mock<IUserStore<IdentityUser>>();
+            var options = new Mock<IOptions<IdentityOptions>>();
+            var passwordHasher = new Mock<IPasswordHasher<IdentityUser>>();
+            var userValidators = new List<IUserValidator<IdentityUser>>();
+            var passwordValidators = new List<IPasswordValidator<IdentityUser>>();
+            var keyNormalizer = new Mock<ILookupNormalizer>();
+            var errors = new Mock<IdentityErrorDescriber>();
+            var services = new Mock<IServiceProvider>();
+            var logger = new Mock<ILogger<UserManager<IdentityUser>>>();
+
             _userManagerMock = new Mock<UserManager<IdentityUser>>(
-                store.Object, null, null, null, null, null, null, null, null
+                store.Object,
+                options.Object,
+                passwordHasher.Object,
+                userValidators,
+                passwordValidators,
+                keyNormalizer.Object,
+                errors.Object,
+                services.Object,
+                logger.Object
             );
 
             _controller = new CustomerController(_mockService.Object, _userManagerMock.Object);
@@ -43,8 +63,21 @@ namespace ShipmentSolution.Tests.Controllers
             };
 
             _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns("user-123");
+
             _mockService.Setup(s => s.GetPaginatedAsync(1, 5, null, "user-123", false, true))
                         .ReturnsAsync(mockResult);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, "user-123"),
+                        new Claim(ClaimTypes.Role, "RegisteredUser")
+                    }, "mock"))
+                }
+            };
 
             var result = await _controller.Index(null) as ViewResult;
 
@@ -55,6 +88,21 @@ namespace ShipmentSolution.Tests.Controllers
         [Test]
         public async Task Index_ReturnsViewWithErrorOnException()
         {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, "user-123"),
+                        new Claim(ClaimTypes.Role, "RegisteredUser")
+                    }, "mock"))
+                }
+            };
+
+            _userManagerMock.Setup(um => um.GetUserId(It.IsAny<ClaimsPrincipal>()))
+                            .Returns("user-123");
+
             _mockService.Setup(s => s.GetPaginatedAsync(
                 It.IsAny<int>(),
                 It.IsAny<int>(),

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using ShipmentSolution.Services.Core.Interfaces;
@@ -29,14 +30,35 @@ namespace ShipmentSolution.Tests.Controllers
         {
             _shipmentServiceMock = new Mock<IShipmentService>();
             _loggerMock = new Mock<ILogger<ShipmentController>>();
+
+            var store = new Mock<IUserStore<IdentityUser>>();
+            var options = new Mock<IOptions<IdentityOptions>>();
+            var passwordHasher = new Mock<IPasswordHasher<IdentityUser>>();
+            var userValidators = new List<IUserValidator<IdentityUser>>();
+            var passwordValidators = new List<IPasswordValidator<IdentityUser>>();
+            var keyNormalizer = new Mock<ILookupNormalizer>();
+            var errorDescriber = new Mock<IdentityErrorDescriber>();
+            var serviceProvider = new Mock<IServiceProvider>();
+            var logger = new Mock<ILogger<UserManager<IdentityUser>>>();
+
             _userManagerMock = new Mock<UserManager<IdentityUser>>(
-                Mock.Of<IUserStore<IdentityUser>>(), null, null, null, null, null, null, null, null);
+                store.Object,
+                options.Object,
+                passwordHasher.Object,
+                userValidators,
+                passwordValidators,
+                keyNormalizer.Object,
+                errorDescriber.Object,
+                serviceProvider.Object,
+                logger.Object
+            );
 
             _controller = new ShipmentController(
                 _shipmentServiceMock.Object,
                 _loggerMock.Object,
-                _userManagerMock.Object); // ✅ FIX: Pass userManagerMock
+                _userManagerMock.Object);
         }
+
 
         [Test]
         public async Task Index_ReturnsViewWithModel()

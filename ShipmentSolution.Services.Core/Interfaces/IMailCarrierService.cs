@@ -19,7 +19,7 @@ namespace ShipmentSolution.Services.Core.Interfaces
 
         Task<MailCarrierDeleteViewModel> GetByIdAsync(int id);
 
-        // ✅ Updated to accept userId for CreatedByUserId assignment
+
         Task CreateAsync(MailCarrierCreateViewModel model, string userId);
 
         Task EditAsync(MailCarrierEditViewModel model);

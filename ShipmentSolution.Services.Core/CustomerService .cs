@@ -67,7 +67,7 @@ namespace ShipmentSolution.Services.Core
         {
             var customer = await context.Customers.FindAsync(id);
             if (customer == null || customer.IsDeleted)
-                return null; // Already nullable
+                return null; 
 
             if (!user.IsInRole("Administrator") && customer.CreatedByUserId != userId)
                 return null;

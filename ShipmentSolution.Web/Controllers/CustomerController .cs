@@ -27,7 +27,14 @@ namespace ShipmentSolution.Web.Controllers
             var isAdmin = User.IsInRole("Administrator");
             var isLoggedIn = User.Identity?.IsAuthenticated ?? false;
 
-            var model = await customerService.GetPaginatedAsync(page, PageSize, searchTerm, userId, isAdmin, isLoggedIn);
+            if (userId == null && isLoggedIn)
+            {
+                return Unauthorized(); // should never happen, but for safety
+            }
+
+            var model = await customerService.GetPaginatedAsync(
+                page, PageSize, searchTerm, userId ?? string.Empty, isAdmin, isLoggedIn);
+
             ViewBag.CurrentSearch = searchTerm;
             ViewBag.IsLoggedIn = isLoggedIn;
 
@@ -56,16 +63,30 @@ namespace ShipmentSolution.Web.Controllers
             }
 
             var userId = userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
             await customerService.CreateAsync(model, userId);
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
         [Authorize(Roles = "RegisteredUser,Administrator")]
         public async Task<IActionResult> Edit(int id)
         {
             var userId = userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
             var model = await customerService.GetForEditAsync(id, userId, User);
-            if (model == null) return Unauthorized();
+            if (model == null)
+            {
+                return Unauthorized(); // or NotFound()
+            }
 
             model.ShippingMethodOptions = GetShippingMethods();
             return View(model);
@@ -83,8 +104,16 @@ namespace ShipmentSolution.Web.Controllers
             }
 
             var userId = userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
             var success = await customerService.EditAsync(model, userId, User);
-            if (!success) return Unauthorized();
+            if (!success)
+            {
+                return Unauthorized();
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -93,7 +122,10 @@ namespace ShipmentSolution.Web.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var model = await customerService.GetByIdAsync(id);
-            if (model == null) return NotFound();
+            if (model == null)
+            {
+                return NotFound();
+            }
 
             return View(new CustomerDeleteViewModel
             {

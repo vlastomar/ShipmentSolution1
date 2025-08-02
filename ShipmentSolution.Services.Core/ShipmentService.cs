@@ -54,7 +54,7 @@ namespace ShipmentSolution.Services.Core
                 Dimensions = model.Dimensions,
                 ShippingMethod = model.ShippingMethod,
                 ShippingCost = (float)model.ShippingCost,
-                DeliveryDate = (DateTime)model.DeliveryDate,
+                DeliveryDate = model.DeliveryDate ?? DateTime.UtcNow,
                 CustomerId = model.CustomerId,
                 CreatedByUserId = userId
             };

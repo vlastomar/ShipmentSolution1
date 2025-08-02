@@ -23,7 +23,7 @@ namespace ShipmentSolution.Data
         {
             base.OnModelCreating(modelBuilder); // Identity-related configuration
 
-            // ✅ Global query filters for IsDeleted
+            // Global query filters for IsDeleted
             modelBuilder.Entity<ShipmentEntity>()
                 .HasQueryFilter(s => !s.IsDeleted);
 
@@ -36,7 +36,7 @@ namespace ShipmentSolution.Data
             modelBuilder.Entity<Route>()
                 .HasQueryFilter(r => !r.IsDeleted);
 
-            // ✅ Apply a query filter to Deliveries based on their related Shipment's IsDeleted
+            // Apply a query filter to Deliveries based on their related Shipment's IsDeleted
             modelBuilder.Entity<Delivery>()
                 .HasQueryFilter(d => !d.Shipment.IsDeleted);
 

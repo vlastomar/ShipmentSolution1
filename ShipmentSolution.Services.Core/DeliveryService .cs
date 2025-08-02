@@ -189,8 +189,14 @@ namespace ShipmentSolution.Services.Core
 
                 if (delivery == null)
                     throw new ArgumentException("Delivery not found.");
+                //if (!user.IsInRole("Administrator") && delivery.Shipment.CreatedByUserId != userId)
+                //   return null;
+                if (delivery.Shipment == null)
+                    throw new Exception("Associated shipment not found.");
+
                 if (!user.IsInRole("Administrator") && delivery.Shipment.CreatedByUserId != userId)
-                    return null;
+                    throw new UnauthorizedAccessException("You are not authorized to edit this delivery.");
+
 
                 return new DeliveryDeleteViewModel
                 {
@@ -216,8 +222,11 @@ namespace ShipmentSolution.Services.Core
             if (d == null) throw new Exception("Delivery not found.");
 
             // Only admin or owner can edit
+            //if (!user.IsInRole("Administrator") && d.Shipment.CreatedByUserId != userId)
+             //   return null;
             if (!user.IsInRole("Administrator") && d.Shipment.CreatedByUserId != userId)
-                return null;
+                throw new UnauthorizedAccessException("You are not authorized to edit this delivery.");
+
 
             bool isAdmin = user.IsInRole("Administrator");
 

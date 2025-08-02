@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using ShipmentSolution.Services.Core.Interfaces;
@@ -27,16 +29,34 @@ namespace ShipmentSolution.Tests.Controllers
             _mockService = new Mock<IDeliveryService>();
 
             var store = new Mock<IUserStore<IdentityUser>>();
+            var options = new Mock<IOptions<IdentityOptions>>();
+            var passwordHasher = new Mock<IPasswordHasher<IdentityUser>>();
+            var userValidators = new List<IUserValidator<IdentityUser>>();
+            var passwordValidators = new List<IPasswordValidator<IdentityUser>>();
+            var keyNormalizer = new Mock<ILookupNormalizer>();
+            var errorDescriber = new Mock<IdentityErrorDescriber>();
+            var serviceProvider = new Mock<IServiceProvider>();
+            var logger = new Mock<ILogger<UserManager<IdentityUser>>>();
+
             _mockUserManager = new Mock<UserManager<IdentityUser>>(
-                store.Object, null, null, null, null, null, null, null, null);
+                store.Object,
+                options.Object,
+                passwordHasher.Object,
+                userValidators,
+                passwordValidators,
+                keyNormalizer.Object,
+                errorDescriber.Object,
+                serviceProvider.Object,
+                logger.Object
+            );
 
             _controller = new DeliveryController(_mockService.Object, _mockUserManager.Object);
 
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
-                new Claim(ClaimTypes.Role, "Administrator")
-            };
+    {
+        new Claim(ClaimTypes.NameIdentifier, "test-user-id"),
+        new Claim(ClaimTypes.Role, "Administrator")
+    };
 
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var userPrincipal = new ClaimsPrincipal(identity);
@@ -45,6 +65,7 @@ namespace ShipmentSolution.Tests.Controllers
                 HttpContext = new DefaultHttpContext { User = userPrincipal }
             };
         }
+
 
         [Test]
         public async Task Index_ReturnsViewWithModel()

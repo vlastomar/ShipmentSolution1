@@ -53,6 +53,9 @@ namespace ShipmentSolution.Services.Core
 
         public async Task CreateAsync(RouteCreateViewModel model, string userId)
         {
+            if (string.IsNullOrWhiteSpace(model.Stops))
+                throw new ArgumentException("Stops is required and must be a number.");
+
             var entity = new Route
             {
                 StartLocation = model.StartLocation,
@@ -86,6 +89,8 @@ namespace ShipmentSolution.Services.Core
 
         public async Task EditAsync(RouteEditViewModel model)
         {
+            if (string.IsNullOrWhiteSpace(model.Stops))
+                throw new ArgumentException("Stops is required and must be a number.");
             var route = await context.Routes.FindAsync(model.RouteId)
                 ?? throw new Exception("Route not found.");
 

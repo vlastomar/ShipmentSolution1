@@ -81,11 +81,13 @@ namespace ShipmentSolution.Services.Core
             };
         }
 
-        // ✅ Modified to accept and store userId
+       
         public async Task CreateAsync(MailCarrierCreateViewModel model, string userId)
         {
             try
             {
+                
+
                 var names = model.FullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
 
                 var mc = new Data.Models.MailCarrier
@@ -95,7 +97,7 @@ namespace ShipmentSolution.Services.Core
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
                     Status = model.Status,
-                    CurrentLocation = model.CurrentLocation,
+                    CurrentLocation = model.CurrentLocation ?? string.Empty,
                     CreatedByUserId = userId,
                     IsDeleted = false
                 };
@@ -124,7 +126,7 @@ namespace ShipmentSolution.Services.Core
                     mc.Email = model.Email;
                     mc.PhoneNumber = model.PhoneNumber;
                     mc.Status = model.Status;
-                    mc.CurrentLocation = model.CurrentLocation;
+                    mc.CurrentLocation = model.CurrentLocation ?? string.Empty;
 
                     await context.SaveChangesAsync();
                 }
@@ -208,7 +210,7 @@ namespace ShipmentSolution.Services.Core
                         PhoneNumber = mc.PhoneNumber,
                         Status = mc.Status,
                         CurrentLocation = mc.CurrentLocation,
-                        CreatedByUserId = mc.CreatedByUserId
+                        CreatedByUserId = mc.CreatedByUserId ?? string.Empty
                     })
                     .ToListAsync();
 

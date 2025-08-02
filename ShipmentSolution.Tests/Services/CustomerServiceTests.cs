@@ -121,8 +121,10 @@ namespace ShipmentSolution.Tests.Services
             var result = await _service.GetForEditAsync(customer.CustomerId, userId, claimsPrincipal);
 
             // Assert
-            Assert.That(result.FirstName, Is.EqualTo("Bob"));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.FirstName, Is.EqualTo("Bob"));
         }
+
 
 
         [Test]

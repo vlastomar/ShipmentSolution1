@@ -22,6 +22,7 @@ namespace ShipmentSolution.Services.Core.Interfaces
 
         Task<DeliveryEditViewModel> GetForEditAsync(int id, string userId, ClaimsPrincipal user);
 
+
         Task<bool> EditAsync(DeliveryEditViewModel model, string userId, ClaimsPrincipal user);
 
         Task<DeliveryViewModel> GetByIdAsync(int id);
