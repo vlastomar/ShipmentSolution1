@@ -12,6 +12,7 @@ namespace ShipmentSolution.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -60,8 +61,11 @@ namespace ShipmentSolution.Web
                     }
                 }
 
-                string adminEmail = "admin@example.com";
-                string adminPassword = "Admin123!";
+                
+                var configuration = builder.Configuration;
+
+                string adminEmail = configuration["AdminUser:Email"];
+                string adminPassword = configuration["AdminUser:Password"];
 
                 var adminUser = await userManager.FindByEmailAsync(adminEmail);
                 if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Administrator"))
