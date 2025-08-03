@@ -3,28 +3,35 @@ SHIPMENT COMPANY
 Application ShipmentSolution created is covering all needs for one Shipment Company including all chains of working process.
 I/ It consists of:
 1/ Database named Shipments which have 5 entities with relationships as showed on the diagram below:
- <img width="512" height="310" alt="image" src="https://github.com/user-attachments/assets/713d409c-335d-4695-a335-ad3726ebae7b" />
+ <img width="490" height="333" alt="image" src="https://github.com/user-attachments/assets/10423f69-a95e-4b14-a3c1-08cb3c5def22" />
 
 
-  	2/ WEB application has 6 screens : Main , Shipments, Customers, Deliveries, Mail Carriers, Routes. It can be chosen appropriate screen using Upper menu or Down menu on screen. 
+  	2/ WEB application has 6 screens(Views) : Main , Shipments, Customers, Deliveries, Mail Carriers, Routes. It can be chosen appropriate screen using Upper menu or Down menu on screen. Shipments, Customers, Deliveries, Mail Carriers and Routes have in addition 3 screens - Edit,Delete,Create. Totally we have 16 screens and in addition we have for Login + Register users.
 
 II/ For this Application we have 3 types of Users: Admin, Loged User and Unlogged User.
 Admin User can do anything.
-Loged user can list, edit and create shipmenets,customers,deliveries,mail carriers,routes
-Unlogged User can only list information
+Loged user can list, edit and create own records for Shipments, Customers, Deliveries, Mail Carriers and Routes
+Unlogged User can't list,edit,create,delete records. In case user is not loged in then it appeared message requested him to log in.: <img width="944" height="422" alt="image" src="https://github.com/user-attachments/assets/554f31e8-8f3f-4b32-b4fb-45a0f764432c" />
+
 
 III/ Main Screen :
- <img width="680" height="303" alt="image" src="https://github.com/user-attachments/assets/5ba69c9c-a325-4add-8dbe-35496e8da62d" />
+ <img width="936" height="420" alt="image" src="https://github.com/user-attachments/assets/84b926c6-5536-45bb-a72e-33aa6f44e6ad" />
+
 
 It has Upper menu where each screen can be selected and also Logout, Login or Register options. This Upper Menu can be seen on all other screens as well.
 Under pictures we have buttons through which user can see all 5 screens
 
 IV/ Shipments :
-<img width="676" height="282" alt="image" src="https://github.com/user-attachments/assets/64438f94-21db-4693-9967-a70a9b14cf0c" />
-
+<img width="935" height="422" alt="image" src="https://github.com/user-attachments/assets/6e8d8013-baf6-4418-8ec9-198b047f4c2f" />
  
 Here we have options to search records by customer name or by shipping method. Also it has a possibility to Reset the searching text .
 User can see the table with listing of all Shipments and depending of the role the User can Create (button Create Shipment), Edit (button Edit) and Delete (button Delete) the records.
+Create View: <img width="845" height="410" alt="image" src="https://github.com/user-attachments/assets/20f1eed4-1f76-4a9f-9714-3e27a9bdc75c" />  Here it is appear empty form and user need to fill it and to click button Save or button Cancel in case he want to back without creating new shipment. After clicking one of both buttons it backs to main screen for Shimpent (list of Shipment)
+Edit View: <img width="948" height="399" alt="image" src="https://github.com/user-attachments/assets/ebfbe147-3f40-437f-8135-054410890284" />   After clicking on Edit button it appears Edit View. Here the user can edit some field and then to click Save or Cancel buttons (functuonality of those 2 buttons is same as per Create View mentioned above)
+Delete View: <img width="950" height="407" alt="image" src="https://github.com/user-attachments/assets/1f51c658-10db-4f75-9ebc-9c950cb17ed9" /> After clicking delete button it appears Delete View and user have 2 buttons again: Delete and Cancel. On clicking Delete then the record is deleted (soft delete). On clicking button cancel then process of deleting is cancelled and on after clicking of both buttons it backs to listing of Shipments
+
+
+
 
 V/ Customers:
  <img width="680" height="281" alt="image" src="https://github.com/user-attachments/assets/e691aa00-d573-4ecd-809f-7f60cd239426" />
