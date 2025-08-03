@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "All Shipments";
     Layout = "_Layout";
+
+    var shippingMethods = ViewBag.ShippingMethods as List<string> ?? new List<string>();
+    var currentShippingMethod = ViewBag.CurrentShippingMethod as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
 
 @section Styles {
@@ -15,15 +19,15 @@
     <!-- Search / Reset / Create -->
     <form method="get" class="row mb-3 align-items-end">
         <div class="col-md-4">
-            <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Customer Name..." />
+            <input type="text" name="searchTerm" value="@currentSearch" class="form-control" placeholder="Search by Customer Name..." />
         </div>
 
         <div class="col-md-3">
             <select name="shippingMethod" class="form-select">
                 <option value="">All Shipping Methods</option>
-                @foreach (var method in (List<string>)ViewBag.ShippingMethods)
+                @foreach (var method in shippingMethods)
                 {
-                    var selected = method == (string?)ViewBag.CurrentShippingMethod ? "selected=\"selected\"" : "";
+                    var selected = method == currentShippingMethod ? "selected=\"selected\"" : "";
                     @Html.Raw($"<option value=\"{method}\" {selected}>{method}</option>")
                 }
             </select>
@@ -35,21 +39,21 @@
         </div>
 
         <div class="col-md-2 text-end">
-            @if (User.Identity.IsAuthenticated && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
+            @if (User?.Identity?.IsAuthenticated == true && (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator")))
             {
                 <a asp-action="Create" asp-controller="Shipment" class="btn btn-transparent-green">Create Shipment</a>
             }
         </div>
     </form>
 
-    @if (!User.Identity.IsAuthenticated && !Model.Items.Any())
+    @if (User?.Identity?.IsAuthenticated != true && !(Model?.Items?.Any() ?? false))
     {
         <div class="alert alert-warning text-center">
             You are not logged in, so only your associated shipments are shown (if any).<br />
             Please <a asp-area="Identity" asp-page="/Account/Login">log in</a> to manage your shipments.
         </div>
     }
-    else if (Model.Items.Any())
+    else if (Model?.Items?.Any() == true)
     {
         <!-- Shipment Table -->
         <table class="table table-bordered table-striped">
@@ -59,7 +63,7 @@
                     <th>Shipping Method</th>
                     <th>Shipping Cost</th>
                     <th>Delivery Date</th>
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User?.Identity?.IsAuthenticated == true)
                     {
                         <th>Actions</th>
                     }
@@ -73,7 +77,7 @@
                         <td>@shipment.ShippingMethod</td>
                         <td>@shipment.ShippingCost.ToString("C")</td>
                         <td>@(shipment.DeliveryDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
-                        @if (User.Identity.IsAuthenticated)
+                        @if (User?.Identity?.IsAuthenticated == true)
                         {
                             <td>
                                 @if (User.IsInRole("RegisteredUser") || User.IsInRole("Administrator"))
@@ -101,8 +105,8 @@
                         <a class="page-link"
                            asp-action="Index"
                            asp-route-page="@(Model.PageIndex - 1)"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch"
-                           asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Previous</a>
+                           asp-route-searchTerm="@currentSearch"
+                           asp-route-shippingMethod="@currentShippingMethod">Previous</a>
                     </li>
                 }
                 else
@@ -122,8 +126,8 @@
                             <a class="page-link"
                                asp-action="Index"
                                asp-route-page="@i"
-                               asp-route-searchTerm="@ViewBag.CurrentSearch"
-                               asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">@i</a>
+                               asp-route-searchTerm="@currentSearch"
+                               asp-route-shippingMethod="@currentShippingMethod">@i</a>
                         </li>
                     }
                 }
@@ -134,8 +138,8 @@
                         <a class="page-link"
                            asp-action="Index"
                            asp-route-page="@(Model.PageIndex + 1)"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch"
-                           asp-route-shippingMethod="@ViewBag.CurrentShippingMethod">Next</a>
+                           asp-route-searchTerm="@currentSearch"
+                           asp-route-shippingMethod="@currentShippingMethod">Next</a>
                     </li>
                 }
                 else

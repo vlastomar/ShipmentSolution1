@@ -60,7 +60,13 @@ namespace ShipmentSolution.Web.Controllers
         {
             try
             {
-                string userId = userManager.GetUserId(User);
+                string? userId = userManager.GetUserId(User);
+
+                if (userId == null)
+                {
+                    return RedirectToAction("AccessDenied", "Account"); // or another fallback
+                }
+
                 var model = await shipmentService.PrepareCreateViewModelAsync(userId, User);
                 return View(model);
             }
@@ -71,12 +77,18 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Create(ShipmentCreateViewModel model)
         {
-            string userId = userManager.GetUserId(User);
+            string? userId = userManager.GetUserId(User);
+
+            if (userId == null)
+            {
+                return RedirectToAction("AccessDenied", "Account"); // or another fallback view
+            }
 
             if (!ModelState.IsValid)
             {
@@ -98,13 +110,20 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpGet]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(int id)
         {
             try
             {
-                string userId = userManager.GetUserId(User);
+                string? userId = userManager.GetUserId(User);
+
+                if (userId == null)
+                {
+                    return RedirectToAction("AccessDenied", "Account"); // or return Unauthorized();
+                }
+
                 var model = await shipmentService.GetForEditAsync(id, userId, User);
                 if (model == null)
                     return Unauthorized();
@@ -118,12 +137,18 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(ShipmentEditViewModel model)
         {
-            string userId = userManager.GetUserId(User);
+            string? userId = userManager.GetUserId(User);
+
+            if (userId == null)
+            {
+                return RedirectToAction("AccessDenied", "Account"); // or return Unauthorized();
+            }
 
             if (!ModelState.IsValid)
             {
@@ -147,6 +172,7 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
         }
+
 
         [HttpGet]
         [Authorize(Roles = "Administrator")]
@@ -175,6 +201,11 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("AccessDenied", "Account"); // or Forbid()
+                }
+
                 var success = await shipmentService.DeleteAsync(id, userId, User);
 
                 if (!success)
@@ -188,5 +219,6 @@ namespace ShipmentSolution.Web.Controllers
                 return RedirectToAction("Error500", "Home");
             }
         }
+
     }
 }

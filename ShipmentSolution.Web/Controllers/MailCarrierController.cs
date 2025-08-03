@@ -80,6 +80,11 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+
                 await mailCarrierService.CreateAsync(model, userId);
                 return RedirectToAction(nameof(Index));
             }
@@ -91,6 +96,7 @@ namespace ShipmentSolution.Web.Controllers
                 return View(model);
             }
         }
+
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         [HttpGet]

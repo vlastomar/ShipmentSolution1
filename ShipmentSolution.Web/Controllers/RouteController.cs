@@ -67,6 +67,11 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("AccessDenied", "Account"); // or return Forbid();
+                }
+
                 var model = new RouteCreateViewModel
                 {
                     MailCarriers = await routeService.GetMailCarriersAsync(userId, User)
@@ -80,6 +85,7 @@ namespace ShipmentSolution.Web.Controllers
                 return RedirectToAction("Error500", "Home");
             }
         }
+
 
         [Authorize(Roles = "Administrator,RegisteredUser")]
         [HttpPost]

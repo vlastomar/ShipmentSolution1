@@ -9,10 +9,15 @@
     ViewData["Title"] = "All Routes";
     Layout = "_Layout";
 
-    bool isAdmin = User.IsInRole("Administrator");
-    bool isRegistered = User.IsInRole("RegisteredUser");
-    bool isLoggedIn = User.Identity.IsAuthenticated;
-    string? currentUserId = UserManager.GetUserId(User);
+    bool isLoggedIn = User?.Identity?.IsAuthenticated == true;
+    bool isAdmin = isLoggedIn && (User?.IsInRole("Administrator") == true);
+    bool isRegistered = isLoggedIn && (User?.IsInRole("RegisteredUser") == true);
+    string? currentUserId = isLoggedIn && User != null ? UserManager.GetUserId(User) : null;
+
+
+    var priorityOptions = ViewBag.PriorityOptions as List<string> ?? new List<string>();
+    var currentPriority = ViewBag.CurrentPriority as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
 }
 
 <link rel="stylesheet" href="~/css/Route.css" />
@@ -23,14 +28,14 @@
     <form method="get" class="mb-4">
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
-                <input type="text" name="searchTerm" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by Start or End..." />
+                <input type="text" name="searchTerm" value="@currentSearch" class="form-control" placeholder="Search by Start or End..." />
             </div>
             <div class="col-md-3">
                 <select name="priorityFilter" class="form-select">
                     <option value="">All Priorities</option>
-                    @foreach (var priority in (List<string>)ViewBag.PriorityOptions)
+                    @foreach (var priority in priorityOptions)
                     {
-                        <option value="@priority" selected="@(priority == (string?)ViewBag.CurrentPriority ? "selected" : null)">
+                        <option value="@priority" selected="@(priority == currentPriority ? "selected" : null)">
                             @priority
                         </option>
                     }
@@ -56,7 +61,7 @@
             Please <a asp-area="Identity" asp-page="/Account/Login">log in</a> to manage your routes.
         </div>
     }
-    else if (!Model.Items.Any())
+    else if (!(Model?.Items?.Any() ?? false))
     {
         <div class="alert alert-warning text-center mt-4">
             No routes available to display.
@@ -107,8 +112,8 @@
                         <a class="page-link"
                            asp-action="Index"
                            asp-route-page="@(Model.PageIndex - 1)"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch"
-                           asp-route-priorityFilter="@ViewBag.CurrentPriority">Previous</a>
+                           asp-route-searchTerm="@currentSearch"
+                           asp-route-priorityFilter="@currentPriority">Previous</a>
                     </li>
                 }
                 else
@@ -128,8 +133,8 @@
                             <a class="page-link"
                                asp-action="Index"
                                asp-route-page="@i"
-                               asp-route-searchTerm="@ViewBag.CurrentSearch"
-                               asp-route-priorityFilter="@ViewBag.CurrentPriority">@i</a>
+                               asp-route-searchTerm="@currentSearch"
+                               asp-route-priorityFilter="@currentPriority">@i</a>
                         </li>
                     }
                 }
@@ -140,8 +145,8 @@
                         <a class="page-link"
                            asp-action="Index"
                            asp-route-page="@(Model.PageIndex + 1)"
-                           asp-route-searchTerm="@ViewBag.CurrentSearch"
-                           asp-route-priorityFilter="@ViewBag.CurrentPriority">Next</a>
+                           asp-route-searchTerm="@currentSearch"
+                           asp-route-priorityFilter="@currentPriority">Next</a>
                     </li>
                 }
                 else

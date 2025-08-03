@@ -12,7 +12,6 @@ namespace ShipmentSolution.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -32,7 +31,7 @@ namespace ShipmentSolution.Web
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            // Register your services
+            // Register services
             builder.Services.AddScoped<IShipmentService, ShipmentService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
@@ -61,11 +60,15 @@ namespace ShipmentSolution.Web
                     }
                 }
 
-                
                 var configuration = builder.Configuration;
 
-                string adminEmail = configuration["AdminUser:Email"];
-                string adminPassword = configuration["AdminUser:Password"];
+                string? adminEmail = configuration["AdminUser:Email"];
+                string? adminPassword = configuration["AdminUser:Password"];
+
+                if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+                {
+                    throw new InvalidOperationException("Admin credentials are not properly configured in appsettings.");
+                }
 
                 var adminUser = await userManager.FindByEmailAsync(adminEmail);
                 if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Administrator"))
@@ -74,18 +77,16 @@ namespace ShipmentSolution.Web
                 }
             }
 
-            // 🌐 Middleware Pipeline
+            // Middleware Pipeline
             if (app.Environment.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage(); // This shows full stack traces in browser
-                app.UseMigrationsEndPoint();     // Optional: shows EF migration errors
+                app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
-
             else
             {
-                // 🔥 Custom error handling in production
-                app.UseExceptionHandler("/Home/Error500"); // Internal Server Error (500)
-                app.UseStatusCodePagesWithReExecute("/Home/Error{0}"); // Handles 404, 403, etc.
+                app.UseExceptionHandler("/Home/Error500");
+                app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
                 app.UseHsts();
             }
 
