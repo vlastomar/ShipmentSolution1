@@ -58,6 +58,12 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
+                if (userId == null)
+                {
+                    TempData["Error"] = "User not authenticated.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var model = new DeliveryCreateViewModel
                 {
                     MailCarriers = await deliveryService.GetCarrierListAsync(userId, User),
@@ -72,12 +78,17 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Create(DeliveryCreateViewModel model)
         {
             var userId = userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized(); // or Challenge() to redirect to login
+            }
 
             if (!ModelState.IsValid)
             {
@@ -100,10 +111,11 @@ namespace ShipmentSolution.Web.Controllers
                 model.MailCarriers = freshModel.MailCarriers;
                 model.Routes = freshModel.Routes;
 
-                ModelState.AddModelError("", ex.InnerException?.Message ?? ex.Message);
+                ModelState.AddModelError(string.Empty, ex.InnerException?.Message ?? ex.Message);
                 return View(model);
             }
         }
+
 
         [HttpGet]
         [Authorize(Roles = "Administrator,RegisteredUser")]
@@ -112,10 +124,18 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
+                if (userId == null)
+                {
+                    TempData["Error"] = "User is not authenticated.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var model = await deliveryService.GetForEditAsync(id, userId, User);
 
                 if (model == null)
-                    return Unauthorized();
+                {
+                    return Unauthorized(); // or NotFound(), based on your logic
+                }
 
                 return View(model);
             }
@@ -126,15 +146,22 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator,RegisteredUser")]
         public async Task<IActionResult> Edit(DeliveryEditViewModel model)
         {
             if (!ModelState.IsValid)
+            {
                 return View(model);
+            }
 
             var userId = userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Unauthorized(); // Or Challenge() to redirect to login
+            }
 
             try
             {
@@ -155,6 +182,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpGet]
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
@@ -162,10 +190,18 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
+                if (userId == null)
+                {
+                    TempData["Error"] = "User ID not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var model = await deliveryService.GetDeleteViewModelAsync(id, userId, User);
 
                 if (model == null)
+                {
                     return NotFound();
+                }
 
                 return View(model);
             }
@@ -176,6 +212,7 @@ namespace ShipmentSolution.Web.Controllers
             }
         }
 
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrator")]
@@ -184,6 +221,12 @@ namespace ShipmentSolution.Web.Controllers
             try
             {
                 var userId = userManager.GetUserId(User);
+                if (userId == null)
+                {
+                    TempData["Error"] = "User is not authenticated.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var success = await deliveryService.SoftDeleteAsync(id, userId, User);
 
                 if (!success)
@@ -199,5 +242,6 @@ namespace ShipmentSolution.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
     }
 }
