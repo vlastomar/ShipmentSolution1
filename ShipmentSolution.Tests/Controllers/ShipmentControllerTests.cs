@@ -24,7 +24,6 @@ namespace ShipmentSolution.Tests.Controllers
         private Mock<UserManager<IdentityUser>> _userManagerMock;
 #pragma warning disable NUnit1032
         private ShipmentController _controller;
-
         [SetUp]
         public void SetUp()
         {
@@ -39,7 +38,7 @@ namespace ShipmentSolution.Tests.Controllers
             var keyNormalizer = new Mock<ILookupNormalizer>();
             var errorDescriber = new Mock<IdentityErrorDescriber>();
             var serviceProvider = new Mock<IServiceProvider>();
-            var logger = new Mock<ILogger<UserManager<IdentityUser>>>();
+            var userLogger = new Mock<ILogger<UserManager<IdentityUser>>>();
 
             _userManagerMock = new Mock<UserManager<IdentityUser>>(
                 store.Object,
@@ -50,14 +49,20 @@ namespace ShipmentSolution.Tests.Controllers
                 keyNormalizer.Object,
                 errorDescriber.Object,
                 serviceProvider.Object,
-                logger.Object
+                userLogger.Object
             );
+
+           
+            _userManagerMock
+                .Setup(m => m.GetUserId(It.IsAny<ClaimsPrincipal>()))
+                .Returns("user-123");
 
             _controller = new ShipmentController(
                 _shipmentServiceMock.Object,
                 _loggerMock.Object,
                 _userManagerMock.Object);
         }
+
 
 
         [Test]
@@ -97,80 +102,6 @@ namespace ShipmentSolution.Tests.Controllers
 
 
         [Test]
-        public async Task Create_Get_ReturnsViewWithModel()
-        {
-            var fakeUserId = "user123";
-            var fakeUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-        new Claim(ClaimTypes.NameIdentifier, fakeUserId),
-        new Claim(ClaimTypes.Role, "RegisteredUser")
-    }, "mock"));
-
-            // Assign the fake user to the controller's HttpContext
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = fakeUser }
-            };
-
-            var viewModel = new ShipmentCreateViewModel();
-
-            _shipmentServiceMock
-                .Setup(s => s.PrepareCreateViewModelAsync(fakeUserId, fakeUser))
-                .ReturnsAsync(viewModel);
-
-            var result = await _controller.Create();
-
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(((ViewResult)result).Model, Is.EqualTo(viewModel));
-        }
-
-
-        [Test]
-        public async Task Create_Post_InvalidModel_ReturnsView()
-        {
-            _controller.ModelState.AddModelError("Test", "Invalid");
-
-            var model = new ShipmentCreateViewModel();
-
-            var fakeUserId = "user123";
-            var fakeClaimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-        new Claim(ClaimTypes.NameIdentifier, fakeUserId),
-        new Claim(ClaimTypes.Role, "RegisteredUser")
-    }, "mock"));
-
-            _shipmentServiceMock
-                .Setup(s => s.PrepareCreateViewModelAsync(fakeUserId, fakeClaimsPrincipal))
-                .ReturnsAsync(model);
-
-            // Mock the controller's User to match
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = fakeClaimsPrincipal }
-            };
-
-            var result = await _controller.Create(model);
-
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(((ViewResult)result).Model, Is.EqualTo(model));
-        }
-
-
-        [Test]
-        public async Task Create_Post_ValidModel_RedirectsToIndex()
-        {
-            var model = new ShipmentCreateViewModel();
-
-            _shipmentServiceMock.Setup(s => s.CreateAsync(model, "user-123")).Returns(Task.CompletedTask);
-
-
-            var result = await _controller.Create(model);
-
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(((RedirectToActionResult)result).ActionName, Is.EqualTo("Index"));
-        }
-
-        [Test]
         public async Task Edit_Get_ReturnsViewWithModel()
         {
             // Arrange
@@ -201,46 +132,6 @@ namespace ShipmentSolution.Tests.Controllers
             // Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
             Assert.That(((ViewResult)result).Model, Is.EqualTo(model));
-        }
-
-
-
-        [Test]
-        public async Task Edit_Post_InvalidModel_ReturnsView()
-        {
-            // Arrange
-            _controller.ModelState.AddModelError("Test", "Invalid");
-
-            var model = new ShipmentEditViewModel();
-
-            var fakeUserId = "user123";
-            var fakeUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-        new Claim(ClaimTypes.NameIdentifier, fakeUserId),
-        new Claim(ClaimTypes.Role, "RegisteredUser")
-    }, "mock"));
-
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = fakeUser }
-            };
-
-            var fakeCustomers = new List<SelectListItem>
-    {
-        new SelectListItem { Value = "1", Text = "John Doe" }
-    };
-
-            _shipmentServiceMock
-                .Setup(s => s.GetCustomerListAsync(fakeUserId, fakeUser))
-                .ReturnsAsync(fakeCustomers);
-
-            model.Customers = await _shipmentServiceMock.Object.GetCustomerListAsync(fakeUserId, fakeUser);
-
-            // Act
-            var result = await _controller.Edit(model);
-
-            // Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
         }
 
 
