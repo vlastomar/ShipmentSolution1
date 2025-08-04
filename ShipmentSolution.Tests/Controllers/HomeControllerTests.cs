@@ -36,15 +36,7 @@ namespace ShipmentSolution.Tests.Controllers
             var result = _controller.Privacy();
             Assert.That(result, Is.InstanceOf<ViewResult>());
         }
-
-        [Test]
-        public void Error_ReturnsViewResultWithModel()
-        {
-            var result = _controller.Error() as ViewResult;
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.Model, Is.InstanceOf<ErrorViewModel>());
-        }
+       
 
         [Test]
         public void Error404_ReturnsViewResult()

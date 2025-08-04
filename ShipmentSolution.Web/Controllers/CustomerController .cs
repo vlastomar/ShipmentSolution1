@@ -19,7 +19,6 @@ namespace ShipmentSolution.Web.Controllers
             this.userManager = userManager;
         }
 
-        // Public listing based on authentication logic inside the service
         public async Task<IActionResult> Index(string? searchTerm, int page = 1)
         {
             const int PageSize = 5;
@@ -32,14 +31,31 @@ namespace ShipmentSolution.Web.Controllers
                 return Unauthorized(); // should never happen, but for safety
             }
 
-            var model = await customerService.GetPaginatedAsync(
-                page, PageSize, searchTerm, userId ?? string.Empty, isAdmin, isLoggedIn);
+            try
+            {
+                var model = await customerService.GetPaginatedAsync(
+                    page, PageSize, searchTerm, userId ?? string.Empty, isAdmin, isLoggedIn);
 
-            ViewBag.CurrentSearch = searchTerm;
-            ViewBag.IsLoggedIn = isLoggedIn;
+                ViewBag.CurrentSearch = searchTerm;
+                ViewBag.IsLoggedIn = isLoggedIn;
 
-            return View(model);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                var error = ex.ToString();
+                ModelState.AddModelError(string.Empty, "An error occurred while loading customer data.");
+
+                
+                ViewBag.CurrentSearch = searchTerm;
+                ViewBag.IsLoggedIn = isLoggedIn;
+
+                return View(); // or return View(new CustomerListViewModel());
+            }
         }
+
+
+
 
         [Authorize(Roles = "RegisteredUser,Administrator")]
         public IActionResult Create()

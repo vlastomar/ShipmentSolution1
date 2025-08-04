@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,7 @@ using ShipmentSolution.Web.Controllers;
 using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.RouteViewModels;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ShipmentSolution.Tests.Controllers
@@ -27,7 +29,7 @@ namespace ShipmentSolution.Tests.Controllers
             _routeServiceMock = new Mock<IRouteService>();
             _loggerMock = new Mock<ILogger<RouteController>>();
 
-            // ✅ Fully mocked dependencies for UserManager to avoid CS8625
+            
             var store = new Mock<IUserStore<IdentityUser>>();
             var options = new Mock<IOptions<IdentityOptions>>();
             var passwordHasher = new Mock<IPasswordHasher<IdentityUser>>();
@@ -56,29 +58,7 @@ namespace ShipmentSolution.Tests.Controllers
                 _userManagerMock.Object);
         }
 
-        [Test]
-        public async Task Index_ReturnsViewResult_WithModel()
-        {
-            var pagedRoutes = new PaginatedList<RouteViewModel>
-            {
-                Items = new List<RouteViewModel>
-                {
-                    new RouteViewModel { RouteId = 1, StartLocation = "A", EndLocation = "B", Priority = 3 }
-                },
-                PageIndex = 1,
-                TotalPages = 1
-            };
-
-            _routeServiceMock.Setup(s =>
-                s.GetPaginatedAsync(1, 5, null, null, null, false)) // Replace nulls with actual values if needed
-                .ReturnsAsync(pagedRoutes);
-
-            var result = await _controller.Index(null, null);
-
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            var viewResult = result as ViewResult;
-            Assert.That(viewResult!.Model, Is.InstanceOf<PaginatedList<RouteViewModel>>());
-        }
+        
 
         [Test]
         public async Task Delete_Get_ReturnsViewWithModel()

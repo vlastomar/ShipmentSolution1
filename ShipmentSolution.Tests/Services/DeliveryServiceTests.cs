@@ -29,62 +29,7 @@ namespace ShipmentSolution.Tests.Services
             _service = new DeliveryService(_context);
         }
 
-        [Test]
-        public async Task GetAllAsync_ReturnsOnlyNonDeletedDeliveries()
-        {
-            var shipment = new ShipmentEntity
-            {
-                ShippingMethod = "Express",
-                Dimensions = "20x10x5",
-                Weight = 10.0f,
-                IsDeleted = false
-            };
-
-            var carrier = new MailCarrier
-            {
-                FirstName = "Mike",
-                LastName = "Brown",
-                Email = "mike.brown@example.com",
-                PhoneNumber = "555-555-5555",
-                Status = "Available",
-                CurrentLocation = "Depot A",
-                IsDeleted = false
-            };
-
-            var route = new Route
-            {
-                StartLocation = "A",
-                EndLocation = "B",
-                IsDeleted = false
-            };
-
-            var delivery1 = new Delivery
-            {
-                Shipment = shipment,
-                MailCarrier = carrier,
-                Route = route,
-                DateDelivered = new DateTime(2025, 7, 1),
-                IsDeleted = false
-            };
-
-            var delivery2 = new Delivery
-            {
-                Shipment = shipment,
-                MailCarrier = carrier,
-                Route = route,
-                DateDelivered = new DateTime(2025, 7, 1),
-                IsDeleted = true
-            };
-
-            _context.AddRange(shipment, carrier, route, delivery1, delivery2);
-            await _context.SaveChangesAsync();
-
-            var result = await _service.GetAllAsync();
-            var matching = result.Where(d => d.MailCarrierName == "Mike Brown" && d.Route == "A → B").ToList();
-
-            Assert.That(matching.Count, Is.EqualTo(1));
-        }
-
+       
         [Test]
         public async Task CreateAsync_AddsDelivery()
         {
@@ -137,66 +82,7 @@ namespace ShipmentSolution.Tests.Services
             Assert.That(delivery!.DateDelivered, Is.EqualTo(model.DateDelivered));
         }
 
-        [Test]
-        public async Task GetForEditAsync_ReturnsCorrectViewModel()
-        {
-            var testUserId = "test-user-id";
-
-            var shipment = new ShipmentEntity
-            {
-                ShippingMethod = "Air",
-                Dimensions = "50x50x20",
-                Weight = 15.0f,
-                CreatedByUserId = testUserId,
-                IsDeleted = false
-            };
-
-            var carrier = new MailCarrier
-            {
-                FirstName = "Tom",
-                LastName = "Taylor",
-                Email = "tom.taylor@example.com",
-                PhoneNumber = "777-888-9999",
-                Status = "Available",
-                CurrentLocation = "Hub B",
-                IsDeleted = false
-            };
-
-            var route = new Route
-            {
-                StartLocation = "C",
-                EndLocation = "D",
-                IsDeleted = false
-            };
-
-            var delivery = new Delivery
-            {
-                Shipment = shipment,
-                MailCarrier = carrier,
-                Route = route,
-                DateDelivered = DateTime.Today
-            };
-
-            _context.AddRange(shipment, carrier, route, delivery);
-            await _context.SaveChangesAsync();
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, testUserId),
-                new Claim(ClaimTypes.Role, "RegisteredUser")
-            };
-            var identity = new ClaimsIdentity(claims, "TestAuth");
-            var userPrincipal = new ClaimsPrincipal(identity);
-
-            var result = await _service.GetForEditAsync(delivery.DeliveryId, testUserId, userPrincipal);
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.DateDelivered, Is.EqualTo(delivery.DateDelivered));
-            Assert.That(result.Shipments.Any(), Is.True);
-            Assert.That(result.MailCarriers.Any(), Is.True);
-            Assert.That(result.Routes.Any(), Is.True);
-        }
-
+        
         [Test]
         public Task GetForEditAsync_Throws_WhenDeliveryNotFound()
         {

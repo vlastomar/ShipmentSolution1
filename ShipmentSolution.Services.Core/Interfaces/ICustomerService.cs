@@ -3,6 +3,7 @@ using ShipmentSolution.Web.ViewModels.Common;
 using ShipmentSolution.Web.ViewModels.CustomerViewModels;
 using System.Security.Claims;
 
+
 namespace ShipmentSolution.Services.Core.Interfaces
 {
     public interface ICustomerService
@@ -39,5 +40,6 @@ namespace ShipmentSolution.Services.Core.Interfaces
 
         // Dropdown values for PreferredShippingMethod
         IEnumerable<SelectListItem> GetShippingMethodOptionsPublic();
+        
     }
 }

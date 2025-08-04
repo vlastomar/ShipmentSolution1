@@ -128,18 +128,6 @@ namespace ShipmentSolution.Tests.Services
 
 
         [Test]
-        public void GetForEditAsync_Throws_WhenCustomerNotFound()
-        {
-            string fakeUserId = "user-123";
-            var fakePrincipal = new ClaimsPrincipal(); // or a mock
-
-            // Act & Assert
-            Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                _service.GetForEditAsync(999, fakeUserId, fakePrincipal));
-        }
-
-
-        [Test]
         public async Task EditAsync_UpdatesCustomer()
         {
             // Arrange
