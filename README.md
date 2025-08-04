@@ -6,7 +6,7 @@ I/ It consists of:
  <img width="490" height="333" alt="image" src="https://github.com/user-attachments/assets/10423f69-a95e-4b14-a3c1-08cb3c5def22" />
 
 
-  	2/ WEB application has 6 screens(Views) : Main , Shipments, Customers, Deliveries, Mail Carriers, Routes. It can be chosen appropriate screen using Upper menu or Down menu on screen. Shipments, Customers, Deliveries, Mail Carriers and Routes have in addition 3 screens - Edit,Delete,Create. Totally we have 16 screens and in addition we have for Login + Register users.
+  	2/ WEB application has 18 screens(Views) : Main , Shipments, Customers, Deliveries, Mail Carriers, Routes. It can be chosen appropriate screen using Upper menu or Down menu on screen. Shipments, Customers, Deliveries, Mail Carriers and Routes have in addition 3 screens - Edit,Delete,Create. Totally we have 16 screens and in addition we have for Login + Register users.
 
 II/ For this Application we have 3 types of Users: Admin, Loged User and Unlogged User.
 Admin User can do anything.
